@@ -1,0 +1,48 @@
+[
+  [
+    {
+      "game": 1718751813451,
+      "date": "2024-06-17",
+      "players": [
+        {
+          "player": "John",
+          "score": 1500,
+          "result": "win"
+        },
+        {
+          "player": "Jane",
+          "score": 1200,
+          "result": "loss"
+        },
+        {
+          "player": "Doe",
+          "score": 1200,
+          "result": "loss"
+        }
+      ]
+    }
+  ],
+  [
+    {
+      "game": 1718752019225,
+      "date": "2024-06-17",
+      "players": [
+        {
+          "player": "John",
+          "score": 1500,
+          "result": "win"
+        },
+        {
+          "player": "Jane",
+          "score": 1200,
+          "result": "loss"
+        },
+        {
+          "player": "Doe",
+          "score": 1200,
+          "result": "loss"
+        }
+      ]
+    }
+  ]
+]

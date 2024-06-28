@@ -1,7 +1,6 @@
 {
   "name": "dartboard",
   "version": "1.0.0",
-  "description": "",
   "main": "dartboard.js",
   "dependencies": {
     "body-parser": "^1.20.2",
@@ -15,5 +14,14 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ctkjedi/DigiDarts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ctkjedi/DigiDarts/issues"
+  },
+  "homepage": "https://github.com/ctkjedi/DigiDarts#readme",
+  "description": ""
 }

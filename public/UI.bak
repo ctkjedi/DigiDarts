@@ -92,7 +92,30 @@
     <div class="container">
         <h1>Digi Darts</h1>
         <div class="scoreboard" id="scoreboard">
-            
+            <div class="player" id="player1">
+                <span>Player 1</span>
+                <span class="score">301</span>
+            </div>
+            <div class="player turn" id="player2">
+                <span>Player 2</span>
+                <span class="score">301</span>
+            </div>
+            <div class="player" id="player3">
+                <span>Player 3</span>
+                <span class="score">301</span>
+            </div>
+            <div class="player" id="player4">
+                <span>Player 4</span>
+                <span class="score">301</span>
+            </div>
+            <div class="player" id="player5">
+                <span>Player 5</span>
+                <span class="score">301</span>
+            </div>
+            <div class="player" id="player6">
+                <span>Player 6</span>
+                <span class="score">301</span>
+            </div>
         </div>
         <div class="alert" id="alert">
             Press the button to begin.
@@ -113,28 +136,21 @@
 	const socket = io();
 	
 	function updateScores(players) {
-            const scoreboard = document.getElementById('scoreboard');
-            scoreboard.innerHTML = ''; // Clear the scoreboard
-
-            players.forEach((player, index) => {
-                const playerDiv = document.createElement('div');
-                playerDiv.classList.add('player');
-                if (player.isTurn) {
-                    playerDiv.classList.add('turn');
-                }
-
-                const playerName = document.createElement('span');
-                playerName.textContent = `Player ${index + 1}`;
-
-                const playerScore = document.createElement('span');
-                playerScore.classList.add('score');
-                playerScore.textContent = player.score;
-
-                playerDiv.appendChild(playerName);
-                playerDiv.appendChild(playerScore);
-                scoreboard.appendChild(playerDiv);
-            });
-        }
+		players.forEach((player, index) => {
+			const playerDiv = document.querySelector(`#player${index + 1}`);
+			if (player) {
+				playerDiv.style.display = 'flex';
+				playerDiv.querySelector('.score').textContent = player.score;
+				if (player.isTurn) {
+					playerDiv.classList.add('turn');
+				} else {
+					playerDiv.classList.remove('turn');
+				}
+			} else {
+				playerDiv.style.display = 'none';
+			}
+		});
+	}
 
 	function newGame() {
 		socket.emit('newGame');
@@ -147,10 +163,6 @@
 	function removePlayer() {
 		socket.emit('removePlayer');
 	}
-	
-	function nextPlayer() {
-            socket.emit('nextPlayer');
-        }
 
 	function simThrow() {
 		const score = Math.floor(Math.random() * 60) + 1; // Simulate a throw score between 1 and 60

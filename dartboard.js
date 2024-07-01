@@ -34,35 +34,124 @@ let players = [{
         isTurn: false
     },
 ];
-let numberOfPlayers = 6;
+
+let numberOfPlayers = 3;
 let currentPlayer = 0;
-
-function getGameState() {
-    return {
-        players: players.slice(0, numberOfPlayers)
-    };
-}
-
 let latestData = {}; // Variable to store the latest data
 let isStarted = 0;
+let isPaused = 0;
 let numThrows = 0;
 let currThrow = 1;
 
+function getGameState() {
+    return {
+        players: players.slice(0, numberOfPlayers),
+        currState: isStarted,
+        ifPaused: isPaused,
+        currPlayer: currentPlayer + 1
+    };
+}
+
 // HTTP POST endpoint to receive data from Arduino
 app.post('/data', (req, res) => {
-  const data = req.body;
-  console.log('Received JSON data:', data);
-  res.json({ message: 'Data received successfully' });
-    /* if (typeof point === 'number' && point >= 0 && point <= 180) {
-        players[currentPlayer].score -= point;
-        if (players[currentPlayer].score < 0) players[currentPlayer].score = 0;
+    const data = req.body;
+    //sends arduino confirmation
+    res.json({
+        message: 'Point received'
+    });
+    console.log('Received JSON data:', data);
+
+    //if game hasn't started and red button is pressed, start game
+    if (!isStarted && data.point == 0 && data.message == 'bigRed') {
+        newGame();
+        io.emit('playSound', 'Player' + String(currentPlayer + 1));
+        setTimeout(function () {
+            io.emit('playSound', 'ThrowDarts');
+        }, 500);
+        console.log('from phys button');
+    }
+
+    //if player has thrown 3 darts and button is pressed, go to next player
+    if (isStarted == 1 && data.point == 0 && isPaused == 1 && data.message == 'bigRed') {
+        console.log('next player');
         currentPlayer = (currentPlayer + 1) % numberOfPlayers;
         players.forEach((player, index) => player.isTurn = index === currentPlayer);
+        currThrow = 1;
+        isPaused = 0;
+        io.emit('playSound', 'Player' + String(currentPlayer + 1));
+        io.emit('bigMsgUpdate', '')
+        setTimeout(function () {
+            io.emit('playSound', 'ThrowDarts');
+        }, 500);
+        io.emit('alertUpdate', 'Player ' + String(currentPlayer + 1) + ', Throw Darts');
         io.emit('gameState', getGameState());
-        res.status(200).send('Score updated');
-    } else {
-        res.status(400).send('Invalid score');
-    } */
+    }
+
+    //if the game has started and a point is received, score and play media accordingly.
+    if (isStarted && data.point > 0 && !isPaused) {
+        var startingScore = players[currentPlayer].score;
+        var thisScore = '';
+        players[currentPlayer].score -= data.point;
+
+        //first check for winner
+        if (players[currentPlayer].score == 0) {
+            console.log('winner');
+            winner(players[currentPlayer]+1);
+        } else {
+            //continue scoring and playing media accordingly
+
+            switch (data.message) {
+            case 'TRIPLE':
+                io.emit('playSound', 'Triple');
+                thisScore = 'TRIPLE!<br>3 x ' + (data.point / 3) + ' = ' + data.point;
+                break;
+            case 'DOUBLE':
+                io.emit('playSound', 'Dbl');
+                thisScore = 'DOUBLE!<br>2 x ' + (data.point / 2) + ' = ' + data.point;
+                break;
+            case 'BULL':
+                io.emit('playSound', 'Bullseye');
+                thisScore = 'BULLSEYE!<br>' + data.point;
+                break;
+            case 'DBLBULL':
+                io.emit('playSound', 'DblBullseye');
+                thisScore = 'DOUBLE BULL!<br>2 x ' + (data.point / 2) + ' = ' + data.point;
+                break;
+            default:
+                io.emit('playSound', 'Plink');
+                thisScore = data.point;
+            }
+
+            io.emit('bigMsgUpdate', thisScore);
+
+            //detecs bust and returns score to when turn started
+            if (players[currentPlayer].score < 0) {
+                players[currentPlayer].score = startingScore;
+
+                isPaused = 1;
+                io.emit('alertUpdate', 'Remove Darts, Press Button to Continue');
+                io.emit('bigMsgUpdate', 'BUST!');
+                setTimeout(function () {
+                    io.emit('playSound', 'Bust');
+                }, 500);
+                setTimeout(function () {
+                    io.emit('playSound', 'RemoveDarts');
+                }, 1000);
+            }
+
+            currThrow++;
+
+            if (currThrow > 3) {
+                isPaused = 1;
+                io.emit('alertUpdate', 'Remove Darts, Press Button to Continue');
+                setTimeout(function () {
+                    io.emit('playSound', 'RemoveDarts');
+                }, 500);
+            }
+        }
+
+    }
+    io.emit('gameState', getGameState());
 });
 
 // Serve the main UI
@@ -81,14 +170,9 @@ io.on('connection', (socket) => {
     // Send the latest data to the newly connected client
     socket.emit('gameState', getGameState());
     socket.emit('updateData', latestData);
-    
 
     socket.on('newGame', () => {
-        players.forEach(player => player.score = 301);
-        currentPlayer = 0;
-        players.forEach((player, index) => player.isTurn = index === currentPlayer);
-        io.emit('gameState', getGameState());
-        console.log("New game started");
+        newGame();
     });
 
     socket.on('addPlayer', () => {
@@ -98,7 +182,7 @@ io.on('connection', (socket) => {
                 score: 301,
                 isTurn: false
             };
-			console.log("player added");
+            console.log("player added");
             io.emit('gameState', getGameState());
         }
     });
@@ -109,14 +193,19 @@ io.on('connection', (socket) => {
             if (currentPlayer >= numberOfPlayers) {
                 currentPlayer = 0;
             }
-			console.log("player removed");
+            console.log("player removed");
             io.emit('gameState', getGameState());
         }
     });
-	
-	 socket.on('nextPlayer', () => {
+
+    socket.on('nextPlayer', () => {
         currentPlayer = (currentPlayer + 1) % numberOfPlayers;
         players.forEach((player, index) => player.isTurn = index === currentPlayer);
+        io.emit('playSound', 'Player' + String(currentPlayer + 1));
+        setTimeout(function () {
+            io.emit('playSound', 'ThrowDarts');
+        }, 500);
+        currThrow = 1;
         io.emit('gameState', getGameState());
     });
 
@@ -168,4 +257,25 @@ function updateScores() {
             playerDiv.style.display = 'none';
         }
     }
+}
+
+function newGame() {
+    players.forEach(player => player.score = 301);
+    currentPlayer = 0;
+    isStarted = 1;
+    currThrow = 1;
+	isPaused = 0;
+    players.forEach((player, index) => player.isTurn = index === currentPlayer);
+    io.emit('alertUpdate', 'Player ' + String(currentPlayer + 1) + ', Throw Darts');
+    io.emit('bigMsgUpdate', '');
+    io.emit('gameState', getGameState());
+
+    console.log("New game started");
+}
+
+function winner(playenNum) {
+	io.emit('playSound','WeHaveAWinner');
+	io.emit('bigMsgUpdate', 'Player '+playenNum+' wins!');
+	isPaused=1;
+	isStarted=0;
 }

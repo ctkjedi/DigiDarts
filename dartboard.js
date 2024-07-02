@@ -64,11 +64,7 @@ app.post('/data', (req, res) => {
     //if game hasn't started and red button is pressed, start game
     if (!isStarted && data.point == 0 && data.message == 'bigRed') {
         newGame();
-        io.emit('playSound', 'Player' + String(currentPlayer + 1));
-        setTimeout(function () {
-            io.emit('playSound', 'ThrowDarts');
-        }, 500);
-        console.log('from phys button');
+        console.log('Game Started from dartboard');
     }
 
     //if player has thrown 3 darts and button is pressed, go to next player
@@ -96,7 +92,7 @@ app.post('/data', (req, res) => {
         //first check for winner
         if (players[currentPlayer].score == 0) {
             console.log('winner');
-            winner(players[currentPlayer]+1);
+            winner(String(currentPlayer + 1));
         } else {
             //continue scoring and playing media accordingly
 
@@ -264,18 +260,22 @@ function newGame() {
     currentPlayer = 0;
     isStarted = 1;
     currThrow = 1;
-	isPaused = 0;
+    isPaused = 0;
     players.forEach((player, index) => player.isTurn = index === currentPlayer);
     io.emit('alertUpdate', 'Player ' + String(currentPlayer + 1) + ', Throw Darts');
     io.emit('bigMsgUpdate', '');
     io.emit('gameState', getGameState());
-
+    io.emit('playSound', 'Player' + String(currentPlayer + 1));
+	io.emit('playVideo', 'your-video.webm');
+    setTimeout(function () {
+        io.emit('playSound', 'ThrowDarts');
+    }, 500);
     console.log("New game started");
 }
 
 function winner(playenNum) {
-	io.emit('playSound','WeHaveAWinner');
-	io.emit('bigMsgUpdate', 'Player '+playenNum+' wins!');
-	isPaused=1;
-	isStarted=0;
+    io.emit('playSound', 'WeHaveAWinner');
+    io.emit('bigMsgUpdate', 'Player ' + playenNum + ' wins!');
+    isPaused = 1;
+    isStarted = 0;
 }

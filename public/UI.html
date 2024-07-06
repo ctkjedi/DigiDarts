@@ -14,78 +14,78 @@
             margin: 0;
             padding: 0;
         }
-
-        .video-overlay {
-			position: fixed;
-			top: 0;
-			left: 0;
-			width: 100%;
-			height: 100%;
-			background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-			display: none;
-			justify-content: center;
-			align-items: center;
+		
+		#scoreboard {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+		
+		.video-container {
+            max-width: 500px;
+            margin: 0px auto;
+			margin-top:0px;
+			top: 408px;
+            display: none;
+            align-items: center;
+            justify-content: center;
 			z-index: 2;
-		}
-
-		.overlay-video {
-			width: 80%;
-			height: auto;
-		}
+			background: url('_gfx/reg.png');
+			//background: rgba(0, 0, 0, 0);
+        }
 		
 		.container {
             background-color: rgba(0, 0, 0, 0.6);
             padding: 20px;
             border-radius: 10px;
-            margin: 50px auto;
-            width: 80%;
+            margin: 0px auto 0px;
+            width: 90%;
             max-width: 600px;
         }
 
         h1 {
             font-size: 2.5em;
             margin-bottom: 20px;
-        }
-
-        .scoreboard {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+			margin-top:0px;
         }
 
         .player {
             display: flex;
+			height: 2em;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 5px;
             background-color: rgba(255, 255, 255, 0.2);
             border-radius: 5px;
         }
 
-        .turn {
+         .turn {
             font-weight: bold;
             color: #ff0;
+			background-color: rgba(255, 255, 255, 0.5);
         }
 
         .alert {
             background-color: #ff5555;
             padding: 10px;
-            margin-top: 20px;
-            border-radius: 5px;
+            margin-top: 10px;
+            border-radius: 2px;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 10px;
         }
 		
 		.bigMsg {
-			margin-top: 15px;
+			margin-top: 5px;
 			color: #66ff00;
 			font-weight: bold;
 			text-align: center;
 			display: inline-block;
 			background-color:rgba(0,0,0,0.8);
-            font-size: 52px;
+            font-size: 42px;
 		}
 
         .controls button {
@@ -107,35 +107,33 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Digi Darts</h1>
-        <div class="scoreboard" id="scoreboard">
-            
-        </div>
-        <div class="alert" id="alert">
-            
-        </div>
+        <div id="scoreboard"></div>
+        <div class="alert" id="alert"></div>
         <div class="controls">
             <button onclick="newGame()">New Game</button>
             <button onclick="nextPlayer()">Next Player</button>
             <button onclick="addPlayer()">Add Player</button>
             <button onclick="removePlayer()">Remove Player</button>
-			<!-- <button onclick="simThrow()">simThrow</button>
-			<button onclick="storeScores()">store scores</button> -->
         </div>
-    </div>
-	<div class="bigMsg" id="bigMsg"></div>
-	<div class="video-overlay" id="video-overlay">
-        <video id="overlay-video" class="overlay-video">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-	    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+        <div class="bigMsg" id="bigMsg"></div>
+	</div>
+	<div class="video-container" id="video-container">
+            <video id="video" width="500" height="500"></video>
+        </div>
+	<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
     <script>
 	var bigMsgDiv = document.getElementById("bigMsg");
 	var alertDiv = document.getElementById("alert");
+	const scoreboard = document.getElementById('scoreboard');
+	
+	 const videoContainer = document.getElementById('video-container');
+     const video = document.getElementById('video');
+	
 	
 	var introSound = new Audio('audio/ReadyToPlay.mp3');
 	
@@ -147,28 +145,36 @@
 	});
 	
 	function updateScores(players) {
-            const scoreboard = document.getElementById('scoreboard');
-            scoreboard.innerHTML = ''; // Clear the scoreboard
-
+            scoreboard.innerHTML = '';
             players.forEach((player, index) => {
                 const playerDiv = document.createElement('div');
                 playerDiv.classList.add('player');
                 if (player.isTurn) {
                     playerDiv.classList.add('turn');
                 }
-
-                const playerName = document.createElement('span');
-                playerName.textContent = `Player ${index + 1}`;
-
-                const playerScore = document.createElement('span');
-                playerScore.classList.add('score');
-                playerScore.textContent = player.score;
-
-                playerDiv.appendChild(playerName);
-                playerDiv.appendChild(playerScore);
+                playerDiv.innerHTML = `
+                    <h3>Player ${index + 1}</h3>
+                    <h3>Score: ${player.score}</h3>
+                `;
                 scoreboard.appendChild(playerDiv);
             });
         }
+
+        socket.on('gameState', (gameState) => {
+			updateScores(gameState.players);
+			//console.log(gameState.currState);
+			//console.log(gameState.players);
+			if(gameState.ifPaused==1){
+				alertDiv.textContent = 'Remove Darts, Press Button to Continue';
+			}else{
+				alertDiv.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
+			}
+			if(gameState.currState==0){
+				//introSound.play();
+				//bigMsgDiv.textContent = 'Let\'s Play!';
+				alertDiv.textContent = 'Press the button to start a new game.';
+			}
+		});
 
 	function newGame() {
 		socket.emit('newGame');
@@ -241,17 +247,41 @@
 		bigMsgDiv.innerHTML = data;
 	});
 	
-	socket.on('playVideo', (filename) => {
-		const videoUrl = '/_gfx/'+filename;
-		const videoOverlay = document.getElementById('video-overlay');
-		const overlayVideo = document.getElementById('overlay-video');
-		overlayVideo.src = videoUrl;
-		videoOverlay.style.display = 'flex';
-        overlayVideo.play();
-		overlayVideo.addEventListener('ended', function() {
-			videoOverlay.style.display = 'none';
-			overlayVideo.src = ''; // Clear the video source
-		});
+	 socket.on('playVideo', (filename, angle) => {
+		 var rect = videoContainer.getBoundingClientRect();
+		 
+            const videoUrl = '/_gfx/' + filename;
+			var rot = String('rotate(' + angle + 'deg)');
+            video.src = videoUrl;
+            videoContainer.style.display = 'flex';
+			videoContainer.style.transform = rot;
+			console.log(rect.top, rect.right, rect.bottom, rect.left);
+            video.play();
+            video.addEventListener('ended', function () {
+                //videoContainer.style.display = 'none';
+                video.src = '';
+            });
+        });
+	
+	//some back end event listeners
+	document.addEventListener('keyup', (e) => {
+		switch(e.code){
+			case 'KeyN':
+				newGame();
+				break;
+			
+			case 'NumpadAdd':
+				addPlayer();
+				break;
+			
+			case 'NumpadSubtract':
+				removePlayer();
+				break;
+				
+			case 'KeyZ':
+				nextPlayer();
+				break;
+		}
 	});
 
     </script>

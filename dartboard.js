@@ -13,6 +13,8 @@ app.use(express.static('public'));
 const server = http.createServer(app);
 const io = socketIo(server);
 
+const zones = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+
 //Game variables
 let players = [{
         score: 301,
@@ -35,7 +37,7 @@ let players = [{
     },
 ];
 
-let numberOfPlayers = 3;
+let numberOfPlayers = 6;
 let currentPlayer = 0;
 let latestData = {}; // Variable to store the latest data
 let isStarted = 0;
@@ -87,6 +89,7 @@ app.post('/data', (req, res) => {
     if (isStarted && data.point > 0 && !isPaused) {
         var startingScore = players[currentPlayer].score;
         var thisScore = '';
+        var thisAngle;
         players[currentPlayer].score -= data.point;
 
         //first check for winner
@@ -99,22 +102,31 @@ app.post('/data', (req, res) => {
             switch (data.message) {
             case 'TRIPLE':
                 io.emit('playSound', 'Triple');
-                thisScore = 'TRIPLE!<br>3 x ' + (data.point / 3) + ' = ' + data.point;
+                thisScore = 'TRIPLE! 3 x ' + (data.point / 3) + ' = ' + data.point;
+                thisAngle = zones.indexOf(data.point / 3) * 18;
+                io.emit('playVideo', 'triple.webm', thisAngle);
                 break;
             case 'DOUBLE':
                 io.emit('playSound', 'Dbl');
-                thisScore = 'DOUBLE!<br>2 x ' + (data.point / 2) + ' = ' + data.point;
+                thisScore = 'DOUBLE! 2 x ' + (data.point / 2) + ' = ' + data.point;
+                thisAngle = zones.indexOf(data.point / 2) * 18;
+                io.emit('playVideo', 'double.webm', thisAngle);
                 break;
             case 'BULL':
                 io.emit('playSound', 'Bullseye');
-                thisScore = 'BULLSEYE!<br>' + data.point;
+                thisScore = 'BULLSEYE! ' + data.point;
+                thisAngle = zones.indexOf(data.point) * 18;
+                io.emit('playVideo', 'bullseye.webm', 0);
                 break;
             case 'DBLBULL':
                 io.emit('playSound', 'DblBullseye');
-                thisScore = 'DOUBLE BULL!<br>2 x ' + (data.point / 2) + ' = ' + data.point;
+                thisScore = 'DOUBLE BULL! 2 x ' + (data.point / 2) + ' = ' + data.point;
+                io.emit('playVideo', 'bullseye.webm', 0);
                 break;
             default:
                 io.emit('playSound', 'Plink');
+                thisAngle = zones.indexOf(data.point) * 18;
+                io.emit('playVideo', 'single.webm', thisAngle);
                 thisScore = data.point;
             }
 
@@ -172,37 +184,15 @@ io.on('connection', (socket) => {
     });
 
     socket.on('addPlayer', () => {
-        if (numberOfPlayers < 6) {
-            numberOfPlayers++;
-            players[numberOfPlayers - 1] = {
-                score: 301,
-                isTurn: false
-            };
-            console.log("player added");
-            io.emit('gameState', getGameState());
-        }
+        addPlayer();
     });
 
     socket.on('removePlayer', () => {
-        if (numberOfPlayers > 1) {
-            numberOfPlayers--;
-            if (currentPlayer >= numberOfPlayers) {
-                currentPlayer = 0;
-            }
-            console.log("player removed");
-            io.emit('gameState', getGameState());
-        }
+        removePlayer();
     });
 
     socket.on('nextPlayer', () => {
-        currentPlayer = (currentPlayer + 1) % numberOfPlayers;
-        players.forEach((player, index) => player.isTurn = index === currentPlayer);
-        io.emit('playSound', 'Player' + String(currentPlayer + 1));
-        setTimeout(function () {
-            io.emit('playSound', 'ThrowDarts');
-        }, 500);
-        currThrow = 1;
-        io.emit('gameState', getGameState());
+        nextPlayer();
     });
 
     socket.on('storeScores', (gameData) => {
@@ -266,11 +256,54 @@ function newGame() {
     io.emit('bigMsgUpdate', '');
     io.emit('gameState', getGameState());
     io.emit('playSound', 'Player' + String(currentPlayer + 1));
-	io.emit('playVideo', 'your-video.webm');
     setTimeout(function () {
         io.emit('playSound', 'ThrowDarts');
     }, 500);
     console.log("New game started");
+}
+
+function nextPlayer() {
+    console.log(currThrow);
+    if (currThrow < 4) {
+        isPaused = 1;
+        io.emit('alertUpdate', 'Remove Darts, Press Button to Continue');
+        io.emit('playSound', 'RemoveDarts');
+        io.emit('bigMsgUpdate', '');
+        currThrow = 4;
+    } else {
+        isPaused = 0;
+        currentPlayer = (currentPlayer + 1) % numberOfPlayers;
+        players.forEach((player, index) => player.isTurn = index === currentPlayer);
+        io.emit('playSound', 'Player' + String(currentPlayer + 1));
+        setTimeout(function () {
+            io.emit('playSound', 'ThrowDarts');
+        }, 500);
+        currThrow = 1;
+    }
+    io.emit('gameState', getGameState());
+}
+
+function addPlayer() {
+    if (numberOfPlayers < 6) {
+        numberOfPlayers++;
+        players[numberOfPlayers - 1] = {
+            score: 301,
+            isTurn: false
+        };
+        console.log("player added");
+        io.emit('gameState', getGameState());
+    }
+}
+
+function removePlayer() {
+    if (numberOfPlayers > 1) {
+        numberOfPlayers--;
+        if (currentPlayer >= numberOfPlayers) {
+            currentPlayer = 0;
+        }
+        console.log("player removed");
+        io.emit('gameState', getGameState());
+    }
 }
 
 function winner(playenNum) {

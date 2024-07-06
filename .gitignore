@@ -1,1 +1,9 @@
 node_modules/
+/public/UI.bak
+/public/oldindex.html
+/public/scoreHistory.txt
+/public/audio/PlayerNums.mp3
+/public/_gfx/bull.png
+/public/_gfx/dartboardAnims.aep
+/public/_gfx/*.xmp
+/public/_gfx/*.ai

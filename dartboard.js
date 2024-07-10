@@ -16,25 +16,13 @@ const io = socketIo(server);
 const zones = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 
 //Game variables
-let players = [{
-        score: 301,
-        isTurn: true
-    }, {
-        score: 301,
-        isTurn: false
-    }, {
-        score: 301,
-        isTurn: false
-    }, {
-        score: 301,
-        isTurn: false
-    }, {
-        score: 301,
-        isTurn: false
-    }, {
-        score: 301,
-        isTurn: false
-    },
+let players = [
+    { name: 'Player 1', score: 301, isTurn: false },
+    { name: 'Player 2', score: 301, isTurn: false },
+    { name: 'Player 3', score: 301, isTurn: false },
+    { name: 'Player 4', score: 301, isTurn: false },
+    { name: 'Player 5', score: 301, isTurn: false },
+    { name: 'Player 6', score: 301, isTurn: false }
 ];
 
 let numberOfPlayers = 6;
@@ -172,6 +160,11 @@ app.get('/scores', (req, res) => {
     res.sendFile(__dirname + '/public/displayScores.html');
 });
 
+// Serve the name entry page
+app.get('/players', (req, res) => {
+    res.sendFile(__dirname + '/public/playerNames.html');
+});
+
 io.on('connection', (socket) => {
     console.log('A client connected');
 
@@ -221,6 +214,15 @@ io.on('connection', (socket) => {
             players[currentPlayer].score = 0;
         currentPlayer = (currentPlayer + 1) % numberOfPlayers;
         players.forEach((player, index) => player.isTurn = index === currentPlayer);
+        io.emit('gameState', getGameState());
+    });
+	
+	socket.on('setPlayers', (newPlayers) => {
+        players = newPlayers.map((name, index) => ({
+            name,
+            score: 301,
+            isTurn: index === currentPlayer
+        }));
         io.emit('gameState', getGameState());
     });
 

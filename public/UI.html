@@ -170,8 +170,9 @@
                 if (player.isTurn) {
                     playerDiv.classList.add('turn');
                 }
+				if(player.name == undefined) player.name = "Player "+(index+1);
                 playerDiv.innerHTML = `
-                    <h3>Player ${index + 1}</h3>
+                    <h3>${player.name}</h3>
                     <h3>Score: ${player.score}</h3>
                 `;
                 scoreboard.appendChild(playerDiv);
@@ -293,6 +294,12 @@
 				break;
 		}
 	});
+	
+	// Retrieve player names from local storage
+        const players = JSON.parse(localStorage.getItem('players')) || [];
+        if (players.length > 0) {
+            socket.emit('setPlayers', players);
+        }
 
     </script>
 	

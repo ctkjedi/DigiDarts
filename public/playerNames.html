@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Player Names</title>
+    <style>
+        body {
+            background: url('_gfx/bg.jpg') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 50px auto;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            background-color: #008CBA;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #005f73;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Enter Player Names</h1>
+        <form id="playerForm">
+            <input type="text" id="player1" onfocus="this.value=''" value="Player 1">
+            <input type="text" id="player2" onfocus="this.value=''" value="Player 2">
+            <input type="text" id="player3" onfocus="this.value=''" value="Player 3">
+            <input type="text" id="player4" onfocus="this.value=''" value="Player 4">
+            <input type="text" id="player5" onfocus="this.value=''" value="Player 5">
+            <input type="text" id="player6" onfocus="this.value=''" value="Player 6">
+            <button type="submit">Submit Names</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        const socket = io();
+
+        document.getElementById('playerForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const players = [];
+            for (let i = 1; i <= 6; i++) {
+                const playerName = document.getElementById('player' + i).value;
+                if (playerName) {
+                    players.push(playerName);
+                }
+            }
+            socket.emit('setPlayers', players);
+            alert('Scoreboard updated!');
+        });
+    </script>
+</body>
+</html>

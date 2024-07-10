@@ -13,6 +13,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
+			overflow: hidden; /* Hide scrollbars */
         }
 		
 		#scoreboard {
@@ -24,7 +25,7 @@
         }
 		
 		.video-container {
-            max-width: 500px;
+            max-width: 400px;
             margin: 0px auto;
 			margin-top:0px;
 			top: 408px;
@@ -105,11 +106,26 @@
         .controls button:hover {
             background-color: #005f73;
         }
-    </style>
+     #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            z-index: 9999;
+        }
+</style>
 </head>
 
 <body>
+
     <div class="container">
+	
         <h1>Digi Darts</h1>
         <div id="scoreboard"></div>
         <div class="alert" id="alert"></div>
@@ -122,8 +138,10 @@
         <div class="bigMsg" id="bigMsg"></div>
 	</div>
 	<div class="video-container" id="video-container">
-            <video id="video" width="500" height="500"></video>
+            <video id="video" width="400" height="400"></video>
         </div>
+		<div id="loadingScreen">Loading...</div>
+    <script src="preloadMedia.js"></script>
 	<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 
     <script>
@@ -162,16 +180,12 @@
 
         socket.on('gameState', (gameState) => {
 			updateScores(gameState.players);
-			//console.log(gameState.currState);
-			//console.log(gameState.players);
 			if(gameState.ifPaused==1){
 				alertDiv.textContent = 'Remove Darts, Press Button to Continue';
 			}else{
 				alertDiv.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
 			}
 			if(gameState.currState==0){
-				//introSound.play();
-				//bigMsgDiv.textContent = 'Let\'s Play!';
 				alertDiv.textContent = 'Press the button to start a new game.';
 			}
 		});
@@ -199,16 +213,12 @@
 
 	socket.on('gameState', (gameState) => {
 		updateScores(gameState.players);
-		//console.log(gameState.currState);
-		//console.log(gameState.players);
 		if(gameState.ifPaused==1){
 			alertDiv.textContent = 'Remove Darts, Press Button to Continue';
 		}else{
 			alertDiv.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
 		}
 		if(gameState.currState==0){
-			//introSound.play();
-			//bigMsgDiv.textContent = 'Let\'s Play!';
 			alertDiv.textContent = 'Press the button to start a new game.';
 		}
 		
@@ -259,7 +269,7 @@
             video.play();
             video.addEventListener('ended', function () {
                 //videoContainer.style.display = 'none';
-                video.src = '';
+                //video.src = '';
             });
         });
 	

@@ -6,8 +6,9 @@
     <title>Digi Darts</title>
     <style>
         body {
-            background: url('_gfx/bg.jpg') no-repeat center center fixed;
-            background-size: cover;
+            //background: url('_gfx/bg.jpg') no-repeat center center fixed;
+            background-color:#000000;
+			background-size: cover;
             font-family: 'Arial', sans-serif;
             color: #fff;
             text-align: center;
@@ -25,15 +26,16 @@
         }
 		
 		.video-container {
-            max-width: 400px;
-            margin: 0px auto;
-			margin-top:0px;
-			top: 408px;
-            display: none;
-            align-items: center;
+			position: fixed;
+			top: 470px; /* Adjust this value as needed */
+			left: 50%; /* Centers the div horizontally */
+			margin-left: -130px; /* Half of width to center the div *///display: none;
+			align-items: center;
             justify-content: center;
 			z-index: 2;
-			background: url('_gfx/reg.png');
+			//background: url('_gfx/layout.png');
+			background-size: cover;
+			background-position: center;
 			//background: rgba(0, 0, 0, 0);
         }
 		
@@ -77,6 +79,7 @@
 
         .controls {
             margin-top: 10px;
+			display: none;
         }
 		
 		.bigMsg {
@@ -138,7 +141,7 @@
         <div class="bigMsg" id="bigMsg"></div>
 	</div>
 	<div class="video-container" id="video-container">
-            <video id="video" width="400" height="400"></video>
+            <video id="video" width="260" height="260"></video>
         </div>
 		<div id="loadingScreen">Loading...</div>
     <script src="preloadMedia.js"></script>
@@ -165,16 +168,16 @@
 	function updateScores(players) {
             scoreboard.innerHTML = '';
             players.forEach((player, index) => {
+				var barPerc = 100-Math.floor((player.score/301)*100);
+				console.log(barPerc);
                 const playerDiv = document.createElement('div');
                 playerDiv.classList.add('player');
+				playerDiv.style.background = "linear-gradient(90deg, rgba(16,85,0,1) "+String(barPerc)+"%, rgba(2,0,36,1) "+String(barPerc-1)+"%)";
                 if (player.isTurn) {
                     playerDiv.classList.add('turn');
                 }
 				if(player.name == undefined) player.name = "Player "+(index+1);
-                playerDiv.innerHTML = `
-                    <h3>${player.name}</h3>
-                    <h3>Score: ${player.score}</h3>
-                `;
+                playerDiv.innerHTML = `<h3>${player.name}</h3>                    <h3>Score: ${player.score}</h3>`;
                 scoreboard.appendChild(playerDiv);
             });
         }
@@ -241,7 +244,6 @@
 			},
 		];
 		socket.emit('storeScores',gameData);
-		//console.log(JSON.stringify(gameData));
 	}
 	
 	socket.on('scoreUpdate', data => {
@@ -266,11 +268,10 @@
             video.src = videoUrl;
             videoContainer.style.display = 'flex';
 			videoContainer.style.transform = rot;
-			console.log(rect.top, rect.right, rect.bottom, rect.left);
             video.play();
             video.addEventListener('ended', function () {
-                //videoContainer.style.display = 'none';
-                //video.src = '';
+                videoContainer.style.display = 'none';
+                video.src = '';
             });
         });
 	

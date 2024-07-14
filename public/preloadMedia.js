@@ -7,7 +7,10 @@ const mediaFiles = [
 	{ type: 'audio', src: '/audio/silence.mp3' },
 	{ type: 'audio', src: '/audio/RemoveDarts.mp3' },
 	{ type: 'audio', src: '/audio/ReadyToPlay.mp3' },
+	{ type: 'audio', src: '/audio/addPlayer.mp3' },
+	{ type: 'audio', src: '/audio/removePlayer.mp3' },
 	{ type: 'audio', src: '/audio/Plink.mp3' },
+	{ type: 'audio', src: '/audio/miss.mp3' },
 	{ type: 'audio', src: '/audio/Player6.mp3' },
 	{ type: 'audio', src: '/audio/Player5.mp3' },
 	{ type: 'audio', src: '/audio/Player4.mp3' },
@@ -21,6 +24,8 @@ const mediaFiles = [
 	{ type: 'video', src: '/_gfx/bullseye.webm' },
 	{ type: 'video', src: '/_gfx/double.webm' },
 	{ type: 'video', src: '/_gfx/single.webm' },
+	{ type: 'video', src: '/_gfx/winner.webm' },
+	{ type: 'video', src: '/_gfx/bust.webm' },
 	{ type: 'video', src: '/_gfx/triple.webm' }
 ];
 
@@ -37,6 +42,7 @@ function preloadMedia(file) {
 
         mediaElement.src = file.src;
         mediaElement.preload = 'auto';
+		mediaElement.style.display = 'none';
 
         // Resolve the promise when the media file is loaded
         mediaElement.addEventListener('canplaythrough', resolve);

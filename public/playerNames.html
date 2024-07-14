@@ -19,25 +19,29 @@
             background-color: rgba(0, 0, 0, 0.6);
             padding: 20px;
             border-radius: 10px;
-            margin: 50px auto;
-            width: 90%;
-            max-width: 400px;
+            margin: 0px auto 0px;
+            width: 300px;
         }
 
         h1 {
-            font-size: 2.5em;
+            font-size: 1.8em;
             margin-bottom: 20px;
+			margin-top:0px;
+        }
+
+        .player-input {
+            margin: 10px 0;
         }
 
         input[type="text"] {
             width: 80%;
             padding: 10px;
-            margin: 10px 0;
+            margin: 2px 0;
             border-radius: 5px;
             border: none;
         }
 
-        button {
+        .controls button {
             background-color: #008CBA;
             border: none;
             color: white;
@@ -51,8 +55,12 @@
             cursor: pointer;
         }
 
-        button:hover {
+        .controls button:hover {
             background-color: #005f73;
+        }
+
+        .controls {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -60,32 +68,93 @@
     <div class="container">
         <h1>Enter Player Names</h1>
         <form id="playerForm">
-            <input type="text" id="player1" onfocus="this.value=''" value="Player 1">
-            <input type="text" id="player2" onfocus="this.value=''" value="Player 2">
-            <input type="text" id="player3" onfocus="this.value=''" value="Player 3">
-            <input type="text" id="player4" onfocus="this.value=''" value="Player 4">
-            <input type="text" id="player5" onfocus="this.value=''" value="Player 5">
-            <input type="text" id="player6" onfocus="this.value=''" value="Player 6">
-            <button type="submit">Submit Names</button>
+            <div id="playerInputs"></div>
+            <div class="controls">
+			<button onclick="newGame()" type="button">New Game</button>
+            <button onclick="nextPlayer()" type="button">Next Player</button><br>
+            <button onclick="addPlayer()" type="button">Add Player</button>
+            <button onclick="removePlayer()" type="button">Remove Player</button>
+			<button type="submit">Submit Names</button>
+            </div>
+            
         </form>
     </div>
 
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
     <script>
         const socket = io();
+        let playerCount = 0;
+		socket.emit('getGameState');
+
+        socket.on('connect', () => {
+			setTimeout(function () {
+				socket.emit('getPlayers');
+			}, 500);
+			
+        });
+		
+		socket.on('gameState', (gameState) => {
+			const playerInputsDiv = document.getElementById('playerInputs');
+            playerInputsDiv.innerHTML = '';
+            gameState.players.forEach((player, index) => {
+            //    addPlayerInput(player.name, index + 1);
+				
+            });
+		});
+
+        socket.on('playersData', (players) => {
+            playerCount = players.length;
+            const playerInputsDiv = document.getElementById('playerInputs');
+            playerInputsDiv.innerHTML = '';
+            players.forEach((player, index) => {
+                addPlayerInput(player.name, index + 1);
+				
+            });
+        });
 
         document.getElementById('playerForm').addEventListener('submit', function (event) {
             event.preventDefault();
-            const players = [];
-            for (let i = 1; i <= 6; i++) {
+            const playerFields = [];
+            for (let i = 1; i <= playerCount; i++) {
                 const playerName = document.getElementById('player' + i).value;
                 if (playerName) {
-                    players.push(playerName);
+                    playerFields.push(playerName);
                 }
             }
-            socket.emit('setPlayers', players);
-            alert('Scoreboard updated!');
+            socket.emit('setPlayers', playerFields);
+            //alert('Player names updated! Return to the game page.');
         });
+
+        function addPlayerInput(playerName = '', playerIndex) {
+            if (playerCount <= 6) {
+                const playerInputsDiv = document.getElementById('playerInputs');
+                const newPlayerDiv = document.createElement('div');
+                newPlayerDiv.classList.add('player-input');
+				//if (playerIndex==undefined) playerIndex = playerCount;
+                newPlayerDiv.innerHTML = `<input type="text" id="player${playerIndex}" placeholder="Player ${playerIndex}" value="${playerName}" required>`;
+                playerInputsDiv.appendChild(newPlayerDiv);
+            } else {
+                //alert('Maximum 6 players allowed.');
+            }
+        }
+
+
+		
+		function newGame() {
+			socket.emit('newGame');
+		}
+	
+		function nextPlayer() {
+            socket.emit('nextPlayer');
+        }
+		
+		function addPlayer() {
+			socket.emit('addPlayer');
+		}
+
+		function removePlayer() {
+			socket.emit('removePlayer');
+		}
     </script>
 </body>
 </html>

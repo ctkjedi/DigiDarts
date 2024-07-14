@@ -19,27 +19,27 @@ int lastButtonState = HIGH;
 unsigned long lastPressTime = 0;
 unsigned long debounceDelay = 1000;
 
-const int masterLines = 12; //The number of rows in your dartboard matrix (higher number)
-const int slaveLines = 7; //The number of columns in your dartboard matrix (lower number)
+const int masterLines = 12;  //The number of rows in your dartboard matrix (higher number)
+const int slaveLines = 7;    //The number of columns in your dartboard matrix (lower number)
 
-int matrixMaster[] = {26, 27, 14, 12, 13, 23, 22, 21, 19, 18, 5, 17}; //arduino pins for matrix rows
-int matrixSlave[] = {39, 36, 35, 34, 33, 32, 25}; //arduino pins for matrix columns
+int matrixMaster[] = { 26, 27, 14, 12, 13, 23, 22, 21, 19, 18, 5, 17 };  //arduino pins for matrix rows
+int matrixSlave[] = { 39, 36, 35, 34, 33, 32, 25 };                      //arduino pins for matrix columns
 
 // point values based on row/column combinations. Comments are for pin reference
 int values01[masterLines][slaveLines] = {
   // 39 36  35  34  33  32  25
-  { 4, 13,  8, 39, 13,  4, 12}, //26
-  {18,  6, 36, 18, 54, 18,  6}, //27
-  {30, 10,  2, 10,  3,  1,  1}, //14
-  {45, 15, 40, 15, 60, 20, 20}, //12
-  { 2, 50, 10, 30, 12, 26, 20}, //13
-  { 5, 12, 24, 15,  5, 12, 36}, //23
-  { 3, 25, 14,  4,  6, 38, 34}, //22
-  { 2,  6, 18,  2, 27,  9,  9}, //21
-  {17, 51, 28, 17, 42, 14, 14}, //19
-  { 3,  9, 22,  3, 33, 11, 11}, //18
-  { 7, 16, 32, 21,  7, 16, 48}, //5
-  {19, 57, 16,  8, 24,  8, 19}, //17
+  { 4, 13, 8, 39, 13, 4, 12 },     //26
+  { 18, 6, 36, 18, 54, 18, 6 },    //27
+  { 30, 10, 2, 10, 3, 1, 1 },      //14
+  { 45, 15, 40, 15, 60, 20, 20 },  //12
+  { 2, 50, 10, 30, 12, 26, 20 },   //13
+  { 5, 12, 24, 15, 5, 12, 36 },    //23
+  { 3, 25, 14, 4, 6, 38, 34 },     //22
+  { 2, 6, 18, 2, 27, 9, 9 },       //21
+  { 17, 51, 28, 17, 42, 14, 14 },  //19
+  { 3, 9, 22, 3, 33, 11, 11 },     //18
+  { 7, 16, 32, 21, 7, 16, 48 },    //5
+  { 19, 57, 16, 8, 24, 8, 19 },    //17
 };
 
 //create arrays specifying special multiplier points - triple, double, bull
@@ -47,9 +47,9 @@ int values01[masterLines][slaveLines] = {
 const int x3Len = 20;
 const int x2Len = 21;
 const int cricketHitsLen = 26;
-int x3[] = {1433, 2136, 1836, 2625, 2334, 2739, 534, 1733, 2133, 1439, 1833, 2325, 2634, 1933, 1239, 525, 1936, 2733, 1736, 1233};
-int x2[] = {1435, 2234, 2233, 2635, 1335, 1333, 2235, 1735, 2135, 1325, 1835, 2335, 1332, 1935, 1334, 535, 2225, 2735, 2232, 1235, 1336};
-int cricketHits[] = {1336,2236,1225,1232,1233,1235,1725,1736,1739,2232,2732,2733,2734,2735,1934,1936,1939,2225,525,532,535,536,1234,1236,1239,1334};
+int x3[] = { 1433, 2136, 1836, 2625, 2334, 2739, 534, 1733, 2133, 1439, 1833, 2325, 2634, 1933, 1239, 525, 1936, 2733, 1736, 1233 };
+int x2[] = { 1435, 2234, 2233, 2635, 1335, 1333, 2235, 1735, 2135, 1325, 1835, 2335, 1332, 1935, 1334, 535, 2225, 2735, 2232, 1235, 1336 };
+int cricketHits[] = { 1336, 2236, 1225, 1232, 1233, 1235, 1725, 1736, 1739, 2232, 2732, 2733, 2734, 2735, 1934, 1936, 1939, 2225, 525, 532, 535, 536, 1234, 1236, 1239, 1334 };
 
 String multi = "";
 
@@ -59,11 +59,11 @@ const long interval = 500;
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("Starting");
 
   // Connect to Wi-Fi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to Wi-Fi");
-  Serial.println(multi);
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -75,8 +75,6 @@ void setup() {
 
   pinMode(bigRedBtn, INPUT_PULLUP);
   digitalWrite(bigRedBtn, LOW);
-  multi = "Press Start";
-  Serial.println(multi);
 
 
   // Initialize matrix pins
@@ -102,34 +100,25 @@ void loop() {
   bigRedCheck();
 
   //delay(50);
-
 }
 
 //Checks to see if physical button on dartboard has been pressed
 void bigRedCheck() {
   bigRedState = digitalRead(bigRedBtn);
-  if (lastButtonState == LOW && bigRedState == LOW){
+  if (lastButtonState == LOW && bigRedState == LOW) {
     Serial.println("don't do anything, button is held");
-  }else if(lastButtonState == HIGH && bigRedState == LOW){
+  } else if (lastButtonState == HIGH && bigRedState == LOW) {
     Serial.println("this is where everything is done");
     lastButtonState = LOW;
     Serial.println("Big Red");
     sendData(0, "bigRed", 0);
-    //delay(50);
-  }else{
-    if(lastButtonState!=HIGH){
+    delay(50);
+  } else {
+    if (lastButtonState != HIGH) {
       Serial.println("set it back to high");
       lastButtonState = HIGH;
     }
-    
   }
-//  if (bigRedState == LOW && millis() - lastPressTime > debounceDelay) {
-//    lastPressTime = millis();
-//    Serial.println("Big Red");
-//    sendData(0, "bigRed");
-//    delay(50);
-//  }
-  //digitalWrite(bigRedState, HIGH);
 }
 
 //button cycler
@@ -143,8 +132,8 @@ void throwCheck() {
         Serial.print("Score: ");
         Serial.println(values01[i][j]);
         Serial.println("Master: " + String(matrixMaster[i]) + "   Slave: " + String(matrixSlave[j]));
-        sendData(values01[i][j], multiCheck(matrixMaster[i], matrixSlave[j]), cricketCheck(matrixMaster[i], matrixSlave[j]));
-        //delay(50);
+        sendData(values01[i][j], multiCheck(matrixMaster[i], matrixSlave[j]), 1);
+        delay(50);
         break;
       }
     }
@@ -152,16 +141,16 @@ void throwCheck() {
   }
 }
 
-int cricketCheck(int M, int S){
+/*int cricketCheck(int M, int S) {
+  Serial.println("do cricket check");
   int zoneCheck = M * 100 + S;
-  for (int x=0; x < cricketHitsLen; x++)
-  {
-    if(zoneCheck==cricketHits[x]){
+  for (int x = 0; x < cricketHitsLen; x++) {
+    if (zoneCheck == cricketHits[x]) {
       return 1;
       break;
     }
   }
-}
+}*/
 
 //checks to see if multiiplier or bulls eye have been hit.
 String multiCheck(int M, int S) {

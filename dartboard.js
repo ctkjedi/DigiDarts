@@ -14,29 +14,36 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 const zones = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+const cricketPoints = [25,20,19,18,17,16,15];
 
 
 
 //Game variables
+let missSound = ['doh','ohNo','triedNotMissing','soClose','AwwTooBad','miss'];
+let turnSound = ['ThrowDarts','fireAway','showMe','yerTurn','yerUp','letErFly'];
 let players = [
-    { name: 'Player 1', score: 301, isTurn: false },
-    { name: 'Player 2', score: 301, isTurn: false }
+    { name: 'Player 1', score: 0, isTurn: false, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 25: 0 },
+    { name: 'Player 2', score: 0, isTurn: false, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 25: 0 }
 ];
 
-//let numberOfPlayers = 6;
+let gameType = '301';
 let currentPlayer = 0;
 let latestData = {}; // Variable to store the latest data
 let isStarted = 0;
-let isPaused = 0;
+let isPaused = 1;
 let numThrows = 0;
 let currThrow = 1;
-var startScore
+let baseScore = 0;
+var startScore;
+
 
 function getGameState() {
     return {
         players: players.slice(0, players.length),
         currState: isStarted,
         ifPaused: isPaused,
+		isStarted: isStarted,
+		gameType: gameType,
         currPlayer: currentPlayer + 1
     };
 }
@@ -49,23 +56,17 @@ app.post('/data', (req, res) => {
     res.json({
         message: 'Point received'
     });
+	
     if (typeof data.point=='string') data.point = Number(data.point);
-	console.log(data);
-	 if(currThrow==1) startScore = players[currentPlayer].score;
-    //if game hasn't started and red button is pressed, start game
+	
+	if(currThrow==1) startScore = players[currentPlayer].score;
+    
+	//if game hasn't started and red button is pressed, start game
     if (!isStarted && data.point == 0 && data.message == 'bigRed') {
 		console.log('Start game');
         newGame();
     }else if(isStarted && data.point==0 && data.message=='bigRed' && isPaused==0){
-		//if the game has started and the current player missed, red button pressed - go to next Player
-		console.log('miss');
-		isPaused = 1;
-        io.emit('bigMsgUpdate', 'Missed!');
-		io.emit('playSound','miss');
-        io.emit('alertUpdate', 'Remove Darts, Press Button to Continue');
-        setTimeout(function () {
-            io.emit('playSound', 'RemoveDarts');
-        }, 1000);
+		playerMiss();
 	}else if (isStarted == 1 && data.point == 0 && isPaused == 1 && data.message == 'bigRed') {
         //if player has thrown 3 darts and button is pressed, go to next player
         currentPlayer = (currentPlayer + 1) % players.length;
@@ -75,33 +76,33 @@ app.post('/data', (req, res) => {
         io.emit('playSound', 'Player' + String(currentPlayer + 1));
         io.emit('bigMsgUpdate', '')
         setTimeout(function () {
-            io.emit('playSound', 'ThrowDarts');
-        }, 500);
-        io.emit('alertUpdate', 'Player ' + String(currentPlayer + 1) + ', Throw Darts');
+			var randSound = Math.floor(Math.random() * turnSound.length);
+			io.emit('playSound',turnSound[randSound]);
+			}, 500);
+        io.emit('alertUpdate', players[currentPlayer].name + ', Throw Darts');
         io.emit('gameState', getGameState());
     }else if(isStarted==1 && data.point > 0 && !isPaused) {
+		
 		//if the game has started and a point is received, score and play media accordingly.
-       
         var thisScore = '';
+		var thisMult = '';
         var thisAngle;
-        players[currentPlayer].score -= data.point;
+		io.emit('playSound', 'Plink');
+		
 
-        //first check for winner
-        if (players[currentPlayer].score == 0) {
-            
-            winner(String(currentPlayer + 1));
-        } else {
-            //continue scoring and playing media accordingly
+            //score and play media accordingly
 
             switch (data.message) {
             case 'TRIPLE':
                 io.emit('playSound', 'Triple');
+				thisMult=3;
                 thisScore = 'TRIPLE! 3 x ' + (data.point / 3) + ' = ' + data.point;
                 thisAngle = zones.indexOf(data.point / 3) * 18;
                 io.emit('playVideo', 'triple.webm', thisAngle);
                 break;
             case 'DOUBLE':
                 io.emit('playSound', 'Dbl');
+				thisMult=2;
                 thisScore = 'DOUBLE! 2 x ' + (data.point / 2) + ' = ' + data.point;
                 thisAngle = zones.indexOf(data.point / 2) * 18;
                 io.emit('playVideo', 'double.webm', thisAngle);
@@ -109,21 +110,48 @@ app.post('/data', (req, res) => {
             case 'BULL':
                 io.emit('playSound', 'Bullseye');
                 thisScore = 'BULLSEYE! ' + data.point;
+				thisMult=1;
                 thisAngle = zones.indexOf(data.point) * 18;
-                io.emit('playVideo', 'bullseye.webm', 0);
+				io.emit('playVideo', 'bullseye.webm', 0);
                 break;
             case 'DBLBULL':
                 io.emit('playSound', 'DblBullseye');
+				thisMult=2;
                 thisScore = 'DOUBLE BULL! 2 x ' + (data.point / 2) + ' = ' + data.point;
-                io.emit('playVideo', 'bullseye.webm', 0);
+               io.emit('playVideo', 'bullseye.webm', 0);
                 break;
             default:
-                io.emit('playSound', 'Plink');
                 thisAngle = zones.indexOf(data.point) * 18;
-                io.emit('playVideo', 'single.webm', thisAngle);
+				io.emit('playVideo', 'single.webm', thisAngle);
+				thisMult=1;
                 thisScore = data.point;
             }
+			
+			switch (gameType){
+				case 'cricket':
+					//do cricket check stuff here
+					//if is cricket zone check if open or closed and add hash or score accordingly
+					var zoneHit = data.point/thisMult;
+					console.log('Zone hit: '+zoneHit);
+					if(cricketPoints.includes(zoneHit)){
 
+						for(let i=1;i<=thisMult;i++){
+
+							if(players[currentPlayer][zoneHit]<3){
+								players[currentPlayer][zoneHit]++;
+							}else{
+								players[currentPlayer].score += zoneHit;
+								let numOpen = players.filter(totalOpen=> totalOpen[zoneHit]===3);
+								console.log('Total Open: '+numOpen.length);
+							}
+						}
+					}
+					break;
+				default:
+					players[currentPlayer].score -= data.point;
+					break;
+			}
+			
             io.emit('bigMsgUpdate', thisScore);
 
             //detecs bust and returns score to when turn started
@@ -132,18 +160,18 @@ app.post('/data', (req, res) => {
 				setTimeout(function () {
                    io.emit('playVideo', 'bust.webm', 0);
                 }, 50);
-				
-
                 isPaused = 1;
 				currThrow=4;
                 io.emit('alertUpdate', 'Remove Darts, Press Button to Continue');
-                io.emit('bigMsgUpdate', 'BUST!');
+                io.emit('bigMsgUpdate', thisScore + ' - BUST!');
                 setTimeout(function () {
                     io.emit('playSound', 'Bust');
-                }, 500);
-                setTimeout(function () {
-                    io.emit('playSound', 'RemoveDarts');
-                }, 1000);
+                }, 10);
+                if(currThrow<3){
+					setTimeout(function () {
+						io.emit('playSound', 'RemoveDarts');
+					}, 2000);
+				}
             }
 
             currThrow++;
@@ -155,15 +183,18 @@ app.post('/data', (req, res) => {
                     io.emit('playSound', 'RemoveDarts');
                 }, 500);
             }
-        }
-
+			
+		// check for winner
+        if (players[currentPlayer].score == 0 && gameType!='cricket') {
+            winner(currentPlayer);
+		}
     }
     io.emit('gameState', getGameState());
 });
 
 // Serve the main UI
 app.get('/', (req, res) => {
-		res.sendFile(__dirname + '/public/UI.html');
+		res.sendFile(__dirname + '/public/mainBoard.html');
 });
 
 // Serve the top scores page
@@ -186,6 +217,16 @@ io.on('connection', (socket) => {
     socket.on('newGame', () => {
         newGame();
     });
+
+	socket.on('game301',() => {
+		gameType = '301';
+		newGame();
+	});
+	
+	socket.on('gameCricket',() => {
+		gameType = 'cricket';
+		newGame();
+	});
 
     socket.on('addPlayer', () => {
         addPlayer();
@@ -216,6 +257,23 @@ io.on('connection', (socket) => {
     socket.on('bigMsg', (msg) => {
         io.emit('bigMsgUpdate', msg);
     });
+	
+	socket.on('skipTo',(playerID)=> {
+		if(isStarted){
+			currentPlayer = playerID;
+			currThrow=1;
+			isPaused=0;
+			players.forEach((player, index) => player.isTurn = index === currentPlayer);
+			io.emit('alertUpdate', players[currentPlayer].name + ', Throw Darts');
+			io.emit('bigMsgUpdate', '');
+			io.emit('gameState', getGameState());
+			io.emit('playSound', 'Player' + String(currentPlayer + 1));
+			setTimeout(function () {
+				var randSound = Math.floor(Math.random() * turnSound.length);
+				io.emit('playSound',turnSound[randSound]);
+			}, 500);
+		}
+	});
 
     socket.on('throw', (score) => {
         players[currentPlayer].score -= score;
@@ -226,12 +284,14 @@ io.on('connection', (socket) => {
         io.emit('gameState', getGameState());
     });
 	
-	socket.on('setPlayers', (newPlayers) => {
-        players = newPlayers.map((name, index) => ({
-            name,
-            score: 301,
-            isTurn: index === currentPlayer
-        }));
+	socket.on('setPlayers', (playerNames) => {
+		players = players.map((player, index) => {
+	    if (index < playerNames.length) {
+	        player.name = playerNames[index];
+	    }
+	    return player;
+	});
+
         io.emit('gameState', getGameState());
     });
 	
@@ -261,19 +321,54 @@ function updateScores() {
 }
 
 function newGame() {
-    players.forEach(player => player.score = 301);
+	
+	if(gameType=='cricket' && players.length>4){
+		for(i=0;i<=players.length-4;i++){
+			players.pop();
+		}
+	}
+    players.forEach(player => {
+		switch (gameType){
+			case '301':
+				baseScore = 301;
+				break;
+			case '401':
+				baseScore = 401;
+				break;
+			case '501':
+				baseScore = 501;
+				break;
+			case 'cricket':
+				baseScore = 0;
+				break;
+		}
+		player.score = baseScore;
+		
+		player[15]= 0;
+		player[16]= 0;
+		player[17]= 0;
+		player[18]= 0;
+		player[19]= 0;
+		player[20]= 0;
+		player[25]= 0;
+	});
     currentPlayer = 0;
     isStarted = 1;
     currThrow = 1;
     isPaused = 0;
     players.forEach((player, index) => player.isTurn = index === currentPlayer);
-    io.emit('alertUpdate', 'Player ' + String(currentPlayer + 1) + ', Throw Darts');
+    io.emit('alertUpdate', players[currentPlayer].name + ', Throw Darts');
     io.emit('bigMsgUpdate', '');
     io.emit('gameState', getGameState());
-    io.emit('playSound', 'Player' + String(currentPlayer + 1));
+	io.emit('playSound','intro');
     setTimeout(function () {
-        io.emit('playSound', 'ThrowDarts');
-    }, 500);
+		io.emit('playSound', 'Player' + String(currentPlayer + 1));
+		}, 2500);
+	io.emit('hideAttract');
+    setTimeout(function () {
+        var randSound = Math.floor(Math.random() * turnSound.length);
+		io.emit('playSound',turnSound[randSound]);
+    }, 3000);
 }
 
 function nextPlayer() {
@@ -290,7 +385,8 @@ function nextPlayer() {
         players.forEach((player, index) => player.isTurn = index === currentPlayer);
         io.emit('playSound', 'Player' + String(currentPlayer + 1));
         setTimeout(function () {
-            io.emit('playSound', 'ThrowDarts');
+            var randSound = Math.floor(Math.random() * turnSound.length);
+			io.emit('playSound',turnSound[randSound]);
         }, 500);
         currThrow = 1;
     }
@@ -298,9 +394,20 @@ function nextPlayer() {
 }
 
 function addPlayer() {
-    if (players.length < 6) {
+	switch(gameType){
+		
+		case 'cricket':
+			var maxPlayers = 4;
+			break;
+			
+		default: 
+			var maxPlayers = 6;
+			break;		
+	}
+	
+    if (players.length < maxPlayers) {
 		io.emit('playSound', 'addPlayer');
-		players.push({ name: 'Player '+(players.length+1), score: 301, isTurn: false });
+		players.push({ name: 'Player '+(players.length+1), score: baseScore, isTurn: false, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 25: 0 });
 		io.emit('gameState', getGameState());
 		io.emit('playersData', players);
     }
@@ -319,10 +426,30 @@ function removePlayer() {
     }
 }
 
-function winner(playenNum) {
-    io.emit('playSound', 'WeHaveAWinner');
-	io.emit('playVideo', 'winner.webm', 0);
-    io.emit('bigMsgUpdate', 'Player ' + playenNum + ' wins!');
-    isPaused = 1;
+function playerMiss(){
+	//if the game has started and the current player missed, red button pressed - go to next Player
+		currThrow = 4;
+		isPaused = 1;
+		var randSound = Math.floor(Math.random() * missSound.length);
+        io.emit('bigMsgUpdate', 'Missed!');
+		io.emit('playSound',missSound[randSound]);
+        io.emit('alertUpdate', 'Remove Darts, Press Button to Continue');
+        setTimeout(function () {
+            io.emit('playSound', 'RemoveDarts');
+        }, 1100);
+}
+
+function winner(playerNum) {
+
+	//give a moment for the zone animation and dart hit to finish
+	setTimeout(function () {
+		io.emit('playSound', 'WeHaveAWinner');
+        io.emit('playVideo', 'winner.webm', 0);
+    }, 500);
+	
+	var msg = players[playerNum].name+ ' wins!';
+	console.log(msg);
+	io.emit('bigMsgUpdate', msg);
+    isPaused = 0;
     isStarted = 0;
 }

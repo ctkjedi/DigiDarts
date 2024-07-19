@@ -46,10 +46,8 @@ int values01[masterLines][slaveLines] = {
 //each number in the array is simply to corresponding pin combo concatenated
 const int x3Len = 20;
 const int x2Len = 21;
-const int cricketHitsLen = 26;
 int x3[] = { 1433, 2136, 1836, 2625, 2334, 2739, 534, 1733, 2133, 1439, 1833, 2325, 2634, 1933, 1239, 525, 1936, 2733, 1736, 1233 };
 int x2[] = { 1435, 2234, 2233, 2635, 1335, 1333, 2235, 1735, 2135, 1325, 1835, 2335, 1332, 1935, 1334, 535, 2225, 2735, 2232, 1235, 1336 };
-int cricketHits[] = { 1336, 2236, 1225, 1232, 1233, 1235, 1725, 1736, 1739, 2232, 2732, 2733, 2734, 2735, 1934, 1936, 1939, 2225, 525, 532, 535, 536, 1234, 1236, 1239, 1334 };
 
 String multi = "";
 
@@ -141,17 +139,6 @@ void throwCheck() {
   }
 }
 
-/*int cricketCheck(int M, int S) {
-  Serial.println("do cricket check");
-  int zoneCheck = M * 100 + S;
-  for (int x = 0; x < cricketHitsLen; x++) {
-    if (zoneCheck == cricketHits[x]) {
-      return 1;
-      break;
-    }
-  }
-}*/
-
 //checks to see if multiiplier or bulls eye have been hit.
 String multiCheck(int M, int S) {
   int count = 0;
@@ -179,12 +166,11 @@ String multiCheck(int M, int S) {
 }
 
 
-void sendData(int point, String msg, int cricket) {
+void sendData(int point, String msg) {
   if (WiFi.status() == WL_CONNECTED) {
     StaticJsonDocument<200> doc;
     doc["point"] = String(point);
     doc["message"] = String(msg);
-    doc["cricket"] = String(cricket);
 
     // Serialize JSON to a String
     String jsonString;

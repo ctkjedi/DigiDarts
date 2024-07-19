@@ -3,6 +3,9 @@ LICENSE_bak
 node_modules/
 /public/UI.bak
 /public/oldindex.html
+/public/01game.html
+/public/cricket.html
+/public/UI.html
 /public/scoreHistory.txt
 /public/audio/PlayerNums.mp3
 /public/_gfx/bull.png
@@ -10,3 +13,4 @@ node_modules/
 /public/_gfx/*.xmp
 /public/_gfx/*.ai
 /public/_gfx/dartboardAnims_AME/
+/_project

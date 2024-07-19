@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<link rel="stylesheet" href="styles.css">
+	<meta charset="UTF-8">
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>Digi Darts: 301</title>
+	<style>
+			body {
+	           //background: url('_gfx/bg.jpg') no-repeat center center fixed;
+	           background-color:#000000;
+	           background-size: cover;
+	           font-family: 'Arial', sans-serif;
+	           color: #fff;
+	           text-align: center;
+	           margin: 0;
+	           padding: 0;
+	           overflow: hidden; /* Hide scrollbars */
+	       } 
+</style>
+</head>
+<body>
+
+	<div class="container01" id="01container" style="display:none">
+		<h1>Digi Darts: 301</h1>
+		<div id="scoreboard01" class="scoreboard01"></div>
+		<div class="alert" id="alert1"></div>
+		<div class="bigMsg" id="bigMsg1"></div>
+	</div>
+	<div class="cricketContainer" id="cricketContainer" style="display:none">
+		<h1>Digi Darts: Cricket</h1>
+		<div class="alert" id="alert2"></div>
+		<div class="scoreboard" id="cricketScoreboard"></div>
+		<div class="bigMsg" id="bigMsg2"></div>
+	</div>
+	
+	<div class="video-container" id="video-container">
+		<video height="260" id="video" width="260"></video>
+	</div>
+	<div id="loadingScreen">
+		Loading...
+	</div>
+	<script src="preloadMedia.js"></script> 
+	<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script> 
+	
+	<script>
+	   document.body.style.cursor = 'none';
+	   var bigMsgDiv1 = document.getElementById("bigMsg1");
+	   var alertDiv1 = document.getElementById("alert1");
+	   var bigMsgDiv2 = document.getElementById("bigMsg2");
+	   var alertDiv2 = document.getElementById("alert2");
+	   
+	   const cricketBoard = document.getElementById('cricketScoreboard');
+	   const scoreboard = document.getElementById('scoreboard01');
+	   const cricketContainer = document.getElementById('cricketContainer');
+	   const container01 = document.getElementById('01container');
+	   
+	   let cricketZones = [15,16,17,18,19,20,25];
+	   
+	   const videoContainer = document.getElementById('video-container');
+	   const video = document.getElementById('video');
+	   
+	   const socket = io();
+	   var attractAudio = new Audio('/audio/attract.mp3');
+	   attractAudio.volume = 0.5;
+	   
+	   // Initial setup
+	   socket.emit('getGameState');
+	   
+	   socket.on('playSound', (sfx) => {
+	       var newSound = new Audio('/audio/'+ sfx +'.mp3');
+	       newSound.play();
+	   });
+	   
+	    socket.on('hideAttract',()=>{
+	       video.pause();
+	       videoContainer.style.display = 'none';
+	   });
+	   socket.on('alertUpdate', data => {
+	       alertDiv1.textContent = data;
+		   alertDiv2.textContent = data;
+	   });
+	   
+	   socket.on('bigMsgUpdate', data => {
+	       bigMsgDiv1.innerHTML = data;
+		   bigMsgDiv2.innerHTML = data;
+	   });
+	   
+	   socket.on('playVideo', (filename, angle) => {
+	        var rect = videoContainer.getBoundingClientRect();
+	        const videoUrl = '/_gfx/' + filename;
+	        var rot = String('rotate(' + angle + 'deg)');
+	        video.src = videoUrl;
+	        videoContainer.style.display = 'flex';
+	        videoContainer.style.transform = rot;
+			video.loop = false;
+	       video.play();
+	       var vidCount=0;
+	       video.addEventListener('ended', function () {
+	           if(filename=='winner.webm' && vidCount<2){
+	               //if a winner is declared, loop 3 times
+				   console.log('winner sent');
+	               video.src = videoUrl;
+	               videoContainer.style.display = 'flex';
+	               video.play();
+	               vidCount++
+	           }else{
+	               videoContainer.style.display = 'none';
+	               filename='';
+	               video.src = '';
+	           }
+	       });
+	   });
+	   
+	   socket.on('gameState', (gameState) => {
+		   //console.log(gameState.players);
+		   if(gameState.gameType=='cricket'){
+				cricketContainer.style.display = 'block';
+				container01.style.display = 'none';
+				updateCricket(gameState.players);
+			}else{
+				container01.style.display = 'grid';
+				cricketContainer.style.display = 'none';
+				updateScores(gameState.players);
+			};
+	       if(gameState.ifPaused==1 && gameState.currState==1){
+	           alertDiv1.textContent = 'Remove Darts, Press Button to Continue';
+			   alertDiv2.textContent = 'Remove Darts, Press Button to Continue';
+	       }else if(gameState.ifPaused==0 && gameState.currState==1){
+	           alertDiv1.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
+			   alertDiv2.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
+	           attractAudio.loop=false;
+	           attractAudio.pause();
+	       }else if(gameState.ifPaused==1 && gameState.currState==0){
+	           alertDiv1.textContent = 'Press the button to start a new game.';
+			   alertDiv2.textContent = 'Press the button to start a new game.';
+	           video.src = '_gfx/attract.webm';
+	           video.loop = true;
+	           videoContainer.style.display = 'flex';
+	           video.play();
+	           bigMsgDiv1.textContent = 'Ready to play?';
+			   bigMsgDiv2.textContent = 'Ready to play?';
+	           attractAudio.loop=true;
+	           attractAudio.play();
+	       }else{
+	           video.loop = false;
+	       }
+	       
+	   });
+	   
+	   
+	   function updateScores(players) {
+	           scoreboard.innerHTML = '';
+	           players.forEach((player, index) => {
+	               var barPerc = 100-Math.floor((player.score/301)*100);
+	               const playerDiv = document.createElement('div');
+	               playerDiv.classList.add('player');
+	               playerDiv.style.background = "linear-gradient(90deg, rgba(16,85,0,1) "+String(barPerc)+"%, rgba(2,0,36,1) "+String(barPerc-1)+"%)";
+	               if (player.isTurn) {
+	                   playerDiv.classList.add('turn');
+	               }
+	               if(player.name == undefined) player.name = "Player "+(index+1);
+	               playerDiv.innerHTML = `<h3>${player.name}<\/h3>                    <h3>Score: ${player.score}<\/h3>`;
+	               scoreboard.appendChild(playerDiv);
+	           });
+	       }
+		   
+	   function updateCricket(players) {
+	   cricketScoreboard.innerHTML='<div><\/div><div class="header">15<\/div><div class="header">16<\/div><div class="header">17<\/div><div class="header">18<\/div><div class="header">19<\/div><div class="header">20<\/div><div class="header">Bull<\/div><div class="header">Score<\/div>';
+	           players.forEach((player, index) => {
+	               const playerDiv = document.createElement('div');
+	               const scoreDiv = document.createElement('div');
+	               scoreDiv.classList.add('cell');
+	               playerDiv.classList.add('player-name');
+	               
+	               if (player.isTurn) {
+	                   playerDiv.classList.add('turn');
+	               }
+	               if(player.name == undefined) player.name = "Player "+(index+1);
+	               playerDiv.innerHTML = `${player.name}`;
+	               scoreDiv.innerHTML = `${player.score}`;
+	               cricketScoreboard.appendChild(playerDiv);
+	               cricketZones.forEach(zone =>{
+	                   var divID = 'p'+(index+1)+'-'+zone;
+	                   let newDiv = document.createElement('div');
+	                   newDiv.classList.add('cell');
+	                   newDiv.id = divID;
+	                   switch (player[zone]) {
+	                       case 0:
+	                           newDiv.innerHTML = '-';
+	                           break;
+	                       case 1:
+	                           newDiv.innerHTML = "<img src='_gfx/1.png'>";
+	                           break;
+	                       case 2:
+	                           newDiv.innerHTML = "<img src='_gfx/2.png'>";
+	                           break;
+	                       case 3:
+	                           newDiv.innerHTML = "<img src='_gfx/3.png'>";
+	                           break;
+	                   }
+	                   cricketScoreboard.appendChild(newDiv);
+
+	               });
+	               cricketScoreboard.appendChild(scoreDiv);
+	           });
+	       }
+		   
+		   //some back end event listeners
+	   document.addEventListener('keyup', (e) => {
+	       switch(e.code){
+	           case 'KeyN':
+	               newGame();
+	               break;
+	           
+	           case 'NumpadAdd':
+	               addPlayer();
+	               break;
+	           
+	           case 'NumpadSubtract':
+	               removePlayer();
+	               break;
+	               
+	           case 'KeyZ':
+	               nextPlayer();
+	               break;
+	       }
+	   });
+	   
+	   // Retrieve player names from local storage
+	       const players = JSON.parse(localStorage.getItem('players')) || [];
+	       if (players.length > 0) {
+	           socket.emit('setPlayers', players);
+	       }
+
+	</script>
+</body>
+</html>

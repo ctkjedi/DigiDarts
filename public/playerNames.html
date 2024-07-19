@@ -1,160 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Player Names</title>
-    <style>
-        body {
-            background: url('_gfx/bg.jpg') no-repeat center center fixed;
-            background-size: cover;
-            font-family: 'Arial', sans-serif;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            background-color: rgba(0, 0, 0, 0.6);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 0px auto 0px;
-            width: 300px;
-        }
-
-        h1 {
-            font-size: 1.8em;
-            margin-bottom: 20px;
-			margin-top:0px;
-        }
-
-        .player-input {
-            margin: 10px 0;
-        }
-
-        input[type="text"] {
-            width: 80%;
-            padding: 10px;
-            margin: 2px 0;
-            border-radius: 5px;
-            border: none;
-        }
-
-        .controls button {
-            background-color: #008CBA;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .controls button:hover {
-            background-color: #005f73;
-        }
-
-        .controls {
-            margin-top: 20px;
-        }
-    </style>
+	<link rel="stylesheet" href="styles.css">
+	<meta charset="UTF-8">
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>Enter Player Names</title>
+	<style>
+	       body {
+	           background: url('_gfx/bg.jpg') no-repeat center center fixed;
+	           background-size: cover;
+	           font-family: 'Arial', sans-serif;
+	           color: #fff;
+	           text-align: center;
+	           margin: 0;
+	           padding: 0;
+	       }
+	</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Enter Player Names</h1>
-        <form id="playerForm">
-            <div id="playerInputs"></div>
-            <div class="controls">
-			<button onclick="newGame()" type="button">New Game</button>
-            <button onclick="nextPlayer()" type="button">Next Player</button><br>
-            <button onclick="addPlayer()" type="button">Add Player</button>
-            <button onclick="removePlayer()" type="button">Remove Player</button>
-			<button type="submit">Submit Names</button>
-            </div>
-            
-        </form>
-    </div>
+	<div class="container">
+		<h1>Enter Player Names</h1>
+		<form id="playerForm" name="playerForm">
+			<div id="playerInputs"></div>
+			<div class="controls">
+				<button onclick="addPlayer()" type="button">Add Player</button> <button onclick="removePlayer()" type="button">Remove Player</button><br><button onclick="nextPlayer()" type="button">Next Player</button> <button type="submit">Submit Names</button><br><br><h1 style="background-color:black"> Starts a new Game!</h1><button onclick="game301()" type="button" class="button green">301</button> <button class="button green" onclick="gameCricket()" type="button">Cricket</button><button class="button red" onclick="newGame()" type="button">Restart</button>
+			</div>
+		</form>
+	</div>
+	<script src="https://cdn.socket.io/4.0.0/socket.io.min.js">
+	</script> 
+	<script>
+	       const socket = io();
+	       let playerCount = 0;
+	       socket.emit('getGameState');
 
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <script>
-        const socket = io();
-        let playerCount = 0;
-		socket.emit('getGameState');
+	       socket.on('connect', () => {
+	           setTimeout(function () {
+	               socket.emit('getPlayers');
+	           }, 500);
+	           
+	       });
+	       
+	       socket.on('gameState', (gameState) => {
+		   console.log(gameState);
+	           const playerInputsDiv = document.getElementById('playerInputs');
+	           playerInputsDiv.innerHTML = '';
+	           gameState.players.forEach((player, index) => {
+	               addPlayerInput(player.name, index + 1);
+	               
+	           });
+	       });
 
-        socket.on('connect', () => {
-			setTimeout(function () {
-				socket.emit('getPlayers');
-			}, 500);
-			
-        });
-		
-		socket.on('gameState', (gameState) => {
-			const playerInputsDiv = document.getElementById('playerInputs');
-            playerInputsDiv.innerHTML = '';
-            gameState.players.forEach((player, index) => {
-            //    addPlayerInput(player.name, index + 1);
-				
-            });
-		});
+	       socket.on('playersData', (players) => {
+	           playerCount = players.length;
+	           const playerInputsDiv = document.getElementById('playerInputs');
+	           playerInputsDiv.innerHTML = '';
+	           players.forEach((player, index) => {
+	               addPlayerInput(player.name, index + 1);
+	               
+	           });
+	       });
 
-        socket.on('playersData', (players) => {
-            playerCount = players.length;
-            const playerInputsDiv = document.getElementById('playerInputs');
-            playerInputsDiv.innerHTML = '';
-            players.forEach((player, index) => {
-                addPlayerInput(player.name, index + 1);
-				
-            });
-        });
+	       document.getElementById('playerForm').addEventListener('submit', function (event) {
+	           event.preventDefault();
+	           const playerFields = [];
+	           for (let i = 1; i <= playerCount; i++) {
+	               const playerName = document.getElementById('player' + i).value;
+	               if (playerName) {
+	                   playerFields.push(playerName);
+	               }
+	           }
+	           socket.emit('setPlayers', playerFields);
+	       });
 
-        document.getElementById('playerForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const playerFields = [];
-            for (let i = 1; i <= playerCount; i++) {
-                const playerName = document.getElementById('player' + i).value;
-                if (playerName) {
-                    playerFields.push(playerName);
-                }
-            }
-            socket.emit('setPlayers', playerFields);
-            //alert('Player names updated! Return to the game page.');
-        });
+	       function addPlayerInput(playerName = '', playerIndex) {
+	           if (playerCount <= 6) {
+	               const playerInputsDiv = document.getElementById('playerInputs');
+	               const newPlayerDiv = document.createElement('div');
+	               newPlayerDiv.classList.add('player-input');
+	               newPlayerDiv.innerHTML = `<input type="text" id="player${playerIndex}" placeholder="Player ${playerIndex}" value="${playerName}" required>  <button onclick="skipTo(${playerIndex-1})" type="button">=><\/button>`;
+	               playerInputsDiv.appendChild(newPlayerDiv);
+	           } else {
+	               //alert('Maximum 6 players allowed.');
+	           }
+	       }
 
-        function addPlayerInput(playerName = '', playerIndex) {
-            if (playerCount <= 6) {
-                const playerInputsDiv = document.getElementById('playerInputs');
-                const newPlayerDiv = document.createElement('div');
-                newPlayerDiv.classList.add('player-input');
-				//if (playerIndex==undefined) playerIndex = playerCount;
-                newPlayerDiv.innerHTML = `<input type="text" id="player${playerIndex}" placeholder="Player ${playerIndex}" value="${playerName}" required>`;
-                playerInputsDiv.appendChild(newPlayerDiv);
-            } else {
-                //alert('Maximum 6 players allowed.');
-            }
-        }
+	       function skipTo(playerID){
+	           socket.emit('skipTo', playerID);
+	       }
+	       
+	       
+	       function newGame() {
+	           socket.emit('newGame');
+	       }
+	   
+	       function nextPlayer() {
+	           socket.emit('nextPlayer');
+	       }
+	       
+	       function addPlayer() {
+	           socket.emit('addPlayer');
+	       }
+		   
+		   function game301() {
+	           socket.emit('game301');
+	       }
+		   
+		   function gameCricket() {
+	           socket.emit('gameCricket');
+	       }
 
-
-		
-		function newGame() {
-			socket.emit('newGame');
-		}
-	
-		function nextPlayer() {
-            socket.emit('nextPlayer');
-        }
-		
-		function addPlayer() {
-			socket.emit('addPlayer');
-		}
-
-		function removePlayer() {
-			socket.emit('removePlayer');
-		}
-    </script>
+	       function removePlayer() {
+	           socket.emit('removePlayer');
+	       }
+	</script>
 </body>
 </html>

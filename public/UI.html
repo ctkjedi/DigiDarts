@@ -1,309 +1,216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digi Darts</title>
-    <style>
-        body {
-            //background: url('_gfx/bg.jpg') no-repeat center center fixed;
-            background-color:#000000;
-			background-size: cover;
-            font-family: 'Arial', sans-serif;
-            color: #fff;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-			overflow: hidden; /* Hide scrollbars */
-        }
-		
-		#scoreboard {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            width: 100%;
-            max-width: 600px;
-        }
-		
-		.video-container {
-			position: fixed;
-			top: 470px; /* Adjust this value as needed */
-			left: 50%; /* Centers the div horizontally */
-			margin-left: -130px; /* Half of width to center the div *///display: none;
-			align-items: center;
-            justify-content: center;
-			z-index: 2;
-			//background: url('_gfx/layout.png');
-			background-size: cover;
-			background-position: center;
-			//background: rgba(0, 0, 0, 0);
-        }
-		
-		.container {
-            background-color: rgba(0, 0, 0, 0.6);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 0px auto 0px;
-            width: 90%;
-            max-width: 600px;
-        }
+	<link rel="stylesheet" href="styles.css">
+	<meta charset="UTF-8">
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>Digi Darts: 301</title>
+	<style>
+			body {
+	           //background: url('_gfx/bg.jpg') no-repeat center center fixed;
+	           background-color:#000000;
+	           background-size: cover;
+	           font-family: 'Arial', sans-serif;
+	           color: #fff;
+	           text-align: center;
+	           margin: 0;
+	           padding: 0;
+	           overflow: hidden; /* Hide scrollbars */
+	       } 
+	       
+	       .container {
+	           background-color: rgba(0, 0, 0, 0.6);
+	           padding: 20px;
+	           border-radius: 10px;
+	           margin: 0px auto 0px;
+	           width: 90%;
+	           max-width: 600px;
+	       }
 
-        h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-			margin-top:0px;
-        }
-
-        .player {
-            display: flex;
-			height: 2em;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-        }
-
-         .turn {
-            font-weight: bold;
-            color: #ff0;
-			background-color: rgba(255, 255, 255, 0.5);
-        }
-
-        .alert {
-            background-color: #ff5555;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 2px;
-        }
-
-        .controls {
-            margin-top: 10px;
-			display: none;
-        }
-		
-		.bigMsg {
-			margin-top: 5px;
-			color: #66ff00;
-			font-weight: bold;
-			text-align: center;
-			display: inline-block;
-			background-color:rgba(0,0,0,0.8);
-            font-size: 42px;
-		}
-
-        .controls button {
-            background-color: #008CBA;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .controls button:hover {
-            background-color: #005f73;
-        }
-     #loadingScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2em;
-            z-index: 9999;
-        }
-</style>
+	       
+	</style>
 </head>
-
 <body>
-
-    <div class="container">
-	
-        <h1>Digi Darts</h1>
-        <div id="scoreboard"></div>
-        <div class="alert" id="alert"></div>
-        <div class="controls">
-            <button onclick="newGame()">New Game</button>
-            <button onclick="nextPlayer()">Next Player</button>
-            <button onclick="addPlayer()">Add Player</button>
-            <button onclick="removePlayer()">Remove Player</button>
-        </div>
-        <div class="bigMsg" id="bigMsg"></div>
+	<div class="container">
+		<h1>Digi Darts: 301</h1>
+		<div id="scoreboard01"></div>
+		<div class="alert" id="alert"></div>
+		<div class="bigMsg" id="bigMsg"></div>
 	</div>
 	<div class="video-container" id="video-container">
-            <video id="video" width="260" height="260"></video>
-        </div>
-		<div id="loadingScreen">Loading...</div>
-    <script src="preloadMedia.js"></script>
-	<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+		<video height="260" id="video" width="260"></video>
+	</div>
+	<div id="loadingScreen">
+		Loading...
+	</div>
+	<script src="preloadMedia.js">
+	</script> 
+	<script src="https://cdn.socket.io/4.0.0/socket.io.min.js">
+	</script> 
+	<script>
+	   document.body.style.cursor = 'none';
+	   var bigMsgDiv = document.getElementById("bigMsg");
+	   var alertDiv = document.getElementById("alert");
+	   const scoreboard = document.getElementById('scoreboard01');
+	   
+	    const videoContainer = document.getElementById('video-container');
+	    const video = document.getElementById('video');
+	   
+	   const socket = io();
+	   var attractAudio = new Audio('/audio/attract.mp3');
+	   attractAudio.volume = 0.5;
+	   
+	   socket.on('playSound', (sfx) => {
+	       var newSound = new Audio('/audio/'+ sfx +'.mp3');
+	       newSound.play();
+	   });
+	   
+	   function updateScores(players) {
+	           scoreboard.innerHTML = '';
+	           players.forEach((player, index) => {
+	               var barPerc = 100-Math.floor((player.score/301)*100);
+	               const playerDiv = document.createElement('div');
+	               playerDiv.classList.add('player');
+	               playerDiv.style.background = "linear-gradient(90deg, rgba(16,85,0,1) "+String(barPerc)+"%, rgba(2,0,36,1) "+String(barPerc-1)+"%)";
+	               if (player.isTurn) {
+	                   playerDiv.classList.add('turn');
+	               }
+	               if(player.name == undefined) player.name = "Player "+(index+1);
+	               playerDiv.innerHTML = `<h3>${player.name}<\/h3>                    <h3>Score: ${player.score}<\/h3>`;
+	               scoreboard.appendChild(playerDiv);
+	           });
+	       }
 
-    <script>
-	var bigMsgDiv = document.getElementById("bigMsg");
-	var alertDiv = document.getElementById("alert");
-	const scoreboard = document.getElementById('scoreboard');
-	
-	 const videoContainer = document.getElementById('video-container');
-     const video = document.getElementById('video');
-	
-	
-	var introSound = new Audio('audio/ReadyToPlay.mp3');
-	
-	const socket = io();
-	
-	socket.on('playSound', (sfx) => {
-		var newSound = new Audio('/audio/'+ sfx +'.mp3');
-		newSound.play();
-	});
-	
-	function updateScores(players) {
-            scoreboard.innerHTML = '';
-            players.forEach((player, index) => {
-				var barPerc = 100-Math.floor((player.score/301)*100);
-				console.log(barPerc);
-                const playerDiv = document.createElement('div');
-                playerDiv.classList.add('player');
-				playerDiv.style.background = "linear-gradient(90deg, rgba(16,85,0,1) "+String(barPerc)+"%, rgba(2,0,36,1) "+String(barPerc-1)+"%)";
-                if (player.isTurn) {
-                    playerDiv.classList.add('turn');
-                }
-				if(player.name == undefined) player.name = "Player "+(index+1);
-                playerDiv.innerHTML = `<h3>${player.name}</h3>                    <h3>Score: ${player.score}</h3>`;
-                scoreboard.appendChild(playerDiv);
-            });
-        }
+	       
 
-        socket.on('gameState', (gameState) => {
-			updateScores(gameState.players);
-			if(gameState.ifPaused==1){
-				alertDiv.textContent = 'Remove Darts, Press Button to Continue';
-			}else{
-				alertDiv.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
-			}
-			if(gameState.currState==0){
-				alertDiv.textContent = 'Press the button to start a new game.';
-			}
-		});
+	   function newGame() {
+	       socket.emit('newGame');
+	   }
 
-	function newGame() {
-		socket.emit('newGame');
-	}
+	   function addPlayer() {
+	       socket.emit('addPlayer');
+	   }
 
-	function addPlayer() {
-		socket.emit('addPlayer');
-	}
+	   function removePlayer() {
+	       socket.emit('removePlayer');
+	   }
+	   
+	   function nextPlayer() {
+	           socket.emit('nextPlayer');
+	       }
 
-	function removePlayer() {
-		socket.emit('removePlayer');
-	}
-	
-	function nextPlayer() {
-            socket.emit('nextPlayer');
-        }
+	   function simThrow() {
+	       const score = Math.floor(Math.random() * 60) + 1; // Simulate a throw score between 1 and 60
+	       socket.emit('throw', score);
+	   }
 
-	function simThrow() {
-		const score = Math.floor(Math.random() * 60) + 1; // Simulate a throw score between 1 and 60
-		socket.emit('throw', score);
-	}
 
-	socket.on('gameState', (gameState) => {
-		updateScores(gameState.players);
-		if(gameState.ifPaused==1){
-			alertDiv.textContent = 'Remove Darts, Press Button to Continue';
-		}else{
-			alertDiv.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
-		}
-		if(gameState.currState==0){
-			alertDiv.textContent = 'Press the button to start a new game.';
-		}
-		
-	});
-	
-	// Initial setup
-    socket.emit('getGameState');
-		
-	function storeScores(){
-		const gameData = [
-			{
-				game: Date.now(),
-				date: '2024-06-17',
-				players: [
-					{ player: 'John', score: 1500, result: 'win' },
-					{ player: 'Jane', score: 1200, result: 'loss' },
-					{ player: 'Doe', score: 1200, result: 'loss' },
-				]
-			},
-		];
-		socket.emit('storeScores',gameData);
-	}
-	
-	socket.on('scoreUpdate', data => {
-		scores[data.player - 1] -= data.score;
-		if (scores[data.player - 1] < 0) scores[data.player - 1] = 0;
-		updateScores();
-	});
-	
-	socket.on('alertUpdate', data => {
-		alertDiv.textContent = data;
-	});
-	
-	socket.on('bigMsgUpdate', data => {
-		bigMsgDiv.innerHTML = data;
-	});
-	
-	 socket.on('playVideo', (filename, angle) => {
-		 var rect = videoContainer.getBoundingClientRect();
-		 
-            const videoUrl = '/_gfx/' + filename;
-			var rot = String('rotate(' + angle + 'deg)');
-            video.src = videoUrl;
-            videoContainer.style.display = 'flex';
-			videoContainer.style.transform = rot;
-            video.play();
-            video.addEventListener('ended', function () {
-                videoContainer.style.display = 'none';
-                video.src = '';
-            });
-        });
-	
-	//some back end event listeners
-	document.addEventListener('keyup', (e) => {
-		switch(e.code){
-			case 'KeyN':
-				newGame();
-				break;
-			
-			case 'NumpadAdd':
-				addPlayer();
-				break;
-			
-			case 'NumpadSubtract':
-				removePlayer();
-				break;
-				
-			case 'KeyZ':
-				nextPlayer();
-				break;
-		}
-	});
-	
-	// Retrieve player names from local storage
-        const players = JSON.parse(localStorage.getItem('players')) || [];
-        if (players.length > 0) {
-            socket.emit('setPlayers', players);
-        }
 
-    </script>
-	
+	   socket.on('gameState', (gameState) => {
+	       updateScores(gameState.players);
+	       if(gameState.ifPaused==1 && gameState.currState==1){
+	           alertDiv.textContent = 'Remove Darts, Press Button to Continue';
+	       }else if(gameState.ifPaused==0 && gameState.currState==1){
+	           alertDiv.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
+	           attractAudio.loop=false;
+	           attractAudio.pause();
+	       }else if(gameState.ifPaused==1 && gameState.currState==0){
+	           alertDiv.textContent = 'Press the button to start a new game.';
+	           video.src = '_gfx/attract.webm';
+	           video.loop = true;
+	           videoContainer.style.display = 'flex';
+	           video.play();
+	           bigMsgDiv.textContent = 'Ready to play?';
+	           attractAudio.loop=true;
+	           attractAudio.play();
+	       }else{
+	           video.loop = false;
+	       }
+	       
+	   });
+	   
+	   // Initial setup
+	   socket.emit('getGameState');
+	       
+	   function storeScores(){
+	       const gameData = [
+	           {
+	               game: Date.now(),
+	               date: '2024-06-17',
+	               players: [
+	                   { player: 'John', score: 1500, result: 'win' },
+	                   { player: 'Jane', score: 1200, result: 'loss' },
+	                   { player: 'Doe', score: 1200, result: 'loss' },
+	               ]
+	           },
+	       ];
+	       socket.emit('storeScores',gameData);
+	   }
+	   
+	   socket.on('hideAttract',()=>{
+	       video.pause();
+	       videoContainer.style.display = 'none';
+	   });
+	   socket.on('alertUpdate', data => {
+	       alertDiv.textContent = data;
+	   });
+	   
+	   socket.on('bigMsgUpdate', data => {
+	       bigMsgDiv.innerHTML = data;
+	   });
+	   
+	    socket.on('playVideo', (filename, angle) => {
+	        var rect = videoContainer.getBoundingClientRect();
+	        const videoUrl = '/_gfx/' + filename;
+	        var rot = String('rotate(' + angle + 'deg)');
+	        video.src = videoUrl;
+	        videoContainer.style.display = 'flex';
+	        videoContainer.style.transform = rot;
+			video.loop = false;
+	       video.play();
+	       var vidCount=0;
+	       video.addEventListener('ended', function () {
+	           if(filename=='winner.webm' && vidCount<2){
+	               //if a winner is declaed, loop 3 times
+	               video.src = videoUrl;
+	               videoContainer.style.display = 'flex';
+	               video.play();
+	               vidCount++
+	           }else{
+	               videoContainer.style.display = 'none';
+	               filename='';
+	               video.src = '';
+	           }
+	       });
+	   });
+	   
+	   //some back end event listeners
+	   document.addEventListener('keyup', (e) => {
+	       switch(e.code){
+	           case 'KeyN':
+	               newGame();
+	               break;
+	           
+	           case 'NumpadAdd':
+	               addPlayer();
+	               break;
+	           
+	           case 'NumpadSubtract':
+	               removePlayer();
+	               break;
+	               
+	           case 'KeyZ':
+	               nextPlayer();
+	               break;
+	       }
+	   });
+	   
+	   // Retrieve player names from local storage
+	       const players = JSON.parse(localStorage.getItem('players')) || [];
+	       if (players.length > 0) {
+	           socket.emit('setPlayers', players);
+	       }
 
+	</script>
 </body>
 </html>

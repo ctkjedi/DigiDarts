@@ -13,7 +13,7 @@ app.use(express.static('public'));
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const zones = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+const zones = [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
 const cricketPoints = [25,20,19,18,17,16,15];
 
 
@@ -129,8 +129,7 @@ app.post('/data', (req, res) => {
 			
 			switch (gameType){
 				case 'cricket':
-					//do cricket check stuff here
-					//if is cricket zone check if open or closed and add hash or score accordingly
+				//if is cricket zone check if open or closed and add hash or score accordingly
 					var zoneHit = data.point/thisMult;
 					console.log('Zone hit: '+zoneHit);
 					if(cricketPoints.includes(zoneHit)){
@@ -140,9 +139,11 @@ app.post('/data', (req, res) => {
 							if(players[currentPlayer][zoneHit]<3){
 								players[currentPlayer][zoneHit]++;
 							}else{
-								players[currentPlayer].score += zoneHit;
 								let numOpen = players.filter(totalOpen=> totalOpen[zoneHit]===3);
 								console.log('Total Open: '+numOpen.length);
+								if(numOpen.length != players.length){
+									players[currentPlayer].score += zoneHit;
+								}
 							}
 						}
 					}

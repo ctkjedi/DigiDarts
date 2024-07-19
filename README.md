@@ -17,10 +17,10 @@ This doesn't get into the disassembly, contact tracing, wiring or soldering part
     * Initial Release
 
 ## Roadmap
-* Player name entry from mobile or desktop device
+* ~~Player name entry from mobile or desktop device~~
 * Robust game and score history
-* Random and varied multimedia for events
-* Additional game types (Cricket, et al)
+* ~~Random and varied multimedia for events~~
+* Additional game types (~~Cricket~~, et al)
 * Music
 
 ## Acknowledgments

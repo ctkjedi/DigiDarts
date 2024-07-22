@@ -46,8 +46,10 @@ int values01[masterLines][slaveLines] = {
 //each number in the array is simply to corresponding pin combo concatenated
 const int x3Len = 20;
 const int x2Len = 21;
+const int cricketHitsLen = 26;
 int x3[] = { 1433, 2136, 1836, 2625, 2334, 2739, 534, 1733, 2133, 1439, 1833, 2325, 2634, 1933, 1239, 525, 1936, 2733, 1736, 1233 };
 int x2[] = { 1435, 2234, 2233, 2635, 1335, 1333, 2235, 1735, 2135, 1325, 1835, 2335, 1332, 1935, 1334, 535, 2225, 2735, 2232, 1235, 1336 };
+int cricketHits[] = { 1336, 2236, 1225, 1232, 1233, 1235, 1725, 1736, 1739, 2232, 2732, 2733, 2734, 2735, 1934, 1936, 1939, 2225, 525, 532, 535, 536, 1234, 1236, 1239, 1334 };
 
 String multi = "";
 
@@ -56,20 +58,22 @@ unsigned long previousMillis = 0;
 const long interval = 500;
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting");
+  Serial.begin(9600);
+  //Serial.println("Starting");
 
   // Connect to Wi-Fi
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
-  Serial.print("Connecting to Wi-Fi");
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-  Serial.println("Connected to Wi-Fi");
-  Serial.println(WiFi.localIP());
+  //Serial.print("Connecting to Wi-Fi");
+
+  //while (WiFi.status() != WL_CONNECTED) {
+  // delay(500);
+  //Serial.print(".");
+  // }
+  //Serial.println();
+  //Serial.println("Connected to Wi-Fi");
+  //Serial.println(WiFi.localIP());
 
   pinMode(bigRedBtn, INPUT_PULLUP);
   digitalWrite(bigRedBtn, LOW);
@@ -100,20 +104,21 @@ void loop() {
   //delay(50);
 }
 
+
 //Checks to see if physical button on dartboard has been pressed
 void bigRedCheck() {
   bigRedState = digitalRead(bigRedBtn);
   if (lastButtonState == LOW && bigRedState == LOW) {
-    Serial.println("don't do anything, button is held");
+    //Serial.println("don't do anything, button is held");
   } else if (lastButtonState == HIGH && bigRedState == LOW) {
-    Serial.println("this is where everything is done");
+    //Serial.println("this is where everything is done");
     lastButtonState = LOW;
-    Serial.println("Big Red");
-    sendData(0, "bigRed", 0);
+    //Serial.println("Big Red");
+    sendData(0, "bigRed");
     delay(50);
   } else {
     if (lastButtonState != HIGH) {
-      Serial.println("set it back to high");
+      //Serial.println("set it back to high");
       lastButtonState = HIGH;
     }
   }
@@ -121,16 +126,16 @@ void bigRedCheck() {
 
 //button cycler
 void throwCheck() {
+
   for (int i = 0; i < masterLines; i++) {
     digitalWrite(matrixMaster[i], LOW);
     for (int j = 0; j < slaveLines; j++) {
       if (digitalRead(matrixSlave[j]) == LOW) {
         multiCheck(matrixMaster[i], matrixSlave[j]);
-
-        Serial.print("Score: ");
-        Serial.println(values01[i][j]);
-        Serial.println("Master: " + String(matrixMaster[i]) + "   Slave: " + String(matrixSlave[j]));
-        sendData(values01[i][j], multiCheck(matrixMaster[i], matrixSlave[j]), 1);
+        //Serial.print("Score: ");
+        //Serial.println(values01[i][j]);
+        //Serial.println("Master: " + String(matrixMaster[i]) + "   Slave: " + String(matrixSlave[j]));
+        sendData(values01[i][j], multiCheck(matrixMaster[i], matrixSlave[j]));
         delay(50);
         break;
       }
@@ -138,7 +143,6 @@ void throwCheck() {
     digitalWrite(matrixMaster[i], HIGH);
   }
 }
-
 //checks to see if multiiplier or bulls eye have been hit.
 String multiCheck(int M, int S) {
   int count = 0;
@@ -162,12 +166,17 @@ String multiCheck(int M, int S) {
     if (count == 0) multi = "";
   }
   return multi;
-  Serial.println(multi);
+  //Serial.println(multi);
 }
 
 
 void sendData(int point, String msg) {
+  Serial.println("sending data");
+  Serial.println("zone hit");
+  //Serial.print("WiFi status: ");
+  //Serial.println(WiFi.status());
   if (WiFi.status() == WL_CONNECTED) {
+    //Serial.println("wifi connected");
     StaticJsonDocument<200> doc;
     doc["point"] = String(point);
     doc["message"] = String(msg);
@@ -181,6 +190,9 @@ void sendData(int point, String msg) {
     http.post("/data", "application/json", jsonString);
     int httpResponseCode = http.responseStatusCode();
     String response = http.responseBody();
+    Serial.println("data sent");
     http.endRequest();
+  } else if (WiFi.status() == WL_CONNECT_FAILED || WiFi.status() == WL_CONNECTION_LOST || WiFi.status() == WL_DISCONNECTED) {
+    Serial.println("lost connection");
   }
 }

@@ -55,7 +55,7 @@ String multi = "";
 
 //timer stuff
 unsigned long previousMillis = 0;
-const long interval = 500;
+const long interval = 1000;
 
 void setup() {
   Serial.begin(9600);
@@ -68,8 +68,8 @@ void setup() {
   //Serial.print("Connecting to Wi-Fi");
 
   //while (WiFi.status() != WL_CONNECTED) {
-  // delay(500);
-  //Serial.print(".");
+    // delay(500);
+    //Serial.print(".");
   // }
   //Serial.println();
   //Serial.println("Connected to Wi-Fi");
@@ -94,14 +94,11 @@ void setup() {
 
 void loop() {
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
+  if (currentMillis - previousMillis >= 100) {
+    throwCheck();
+    bigRedCheck();
     previousMillis = currentMillis;
-    // Add periodic actions here if needed
   }
-  throwCheck();
-  bigRedCheck();
-
-  //delay(50);
 }
 
 
@@ -115,7 +112,7 @@ void bigRedCheck() {
     lastButtonState = LOW;
     //Serial.println("Big Red");
     sendData(0, "bigRed");
-    delay(50);
+    //delay(50);
   } else {
     if (lastButtonState != HIGH) {
       //Serial.println("set it back to high");
@@ -132,11 +129,9 @@ void throwCheck() {
     for (int j = 0; j < slaveLines; j++) {
       if (digitalRead(matrixSlave[j]) == LOW) {
         multiCheck(matrixMaster[i], matrixSlave[j]);
-        //Serial.print("Score: ");
-        //Serial.println(values01[i][j]);
-        //Serial.println("Master: " + String(matrixMaster[i]) + "   Slave: " + String(matrixSlave[j]));
+        Serial.print("Score: ");
+        Serial.println(values01[i][j]);
         sendData(values01[i][j], multiCheck(matrixMaster[i], matrixSlave[j]));
-        delay(50);
         break;
       }
     }
@@ -171,12 +166,8 @@ String multiCheck(int M, int S) {
 
 
 void sendData(int point, String msg) {
-  Serial.println("sending data");
-  Serial.println("zone hit");
-  //Serial.print("WiFi status: ");
-  //Serial.println(WiFi.status());
+
   if (WiFi.status() == WL_CONNECTED) {
-    //Serial.println("wifi connected");
     StaticJsonDocument<200> doc;
     doc["point"] = String(point);
     doc["message"] = String(msg);
@@ -190,7 +181,6 @@ void sendData(int point, String msg) {
     http.post("/data", "application/json", jsonString);
     int httpResponseCode = http.responseStatusCode();
     String response = http.responseBody();
-    Serial.println("data sent");
     http.endRequest();
   } else if (WiFi.status() == WL_CONNECT_FAILED || WiFi.status() == WL_CONNECTION_LOST || WiFi.status() == WL_DISCONNECTED) {
     Serial.println("lost connection");

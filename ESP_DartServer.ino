@@ -12,6 +12,10 @@ WiFiClient wifiClient;
 HttpClient http(wifiClient, serverAddress, serverPort);
 
 
+WiFiClient wifiClient;
+HttpClient http(wifiClient, serverAddress, serverPort);
+
+
 //vars for ESP32
 const int bigRedBtn = 15;
 int bigRedState = 0;
@@ -94,6 +98,8 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
+    //throwCheck();
+    //bigRedCheck();
     Serial.println('.');
     previousMillis = currentMillis;
   }

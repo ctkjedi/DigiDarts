@@ -4,7 +4,7 @@
 	<link rel="stylesheet" href="styles.css">
 	<meta charset="UTF-8">
 	<meta content="width=device-width, initial-scale=1.0" name="viewport">
-	<title>Enter Player Names</title>
+	<title>Digi Darts Control Panel</title>
 	<style>
 	       body {
 	           background: url('_gfx/bg.jpg') no-repeat center center fixed;
@@ -13,7 +13,7 @@
 	           color: #fff;
 	           text-align: center;
 	           margin: 0;
-	           padding: 0;
+	           padding: 20px;
 	       }
 	</style>
 </head>
@@ -21,10 +21,19 @@
 	<div class="container">
 		<h1>Enter Player Names</h1>
 		<form id="playerForm" name="playerForm">
-			<div id="playerInputs"></div>
 			<div class="controls">
-				<button onclick="addPlayer()" type="button">Add Player</button> <button onclick="removePlayer()" type="button">Remove Player</button><br><button onclick="nextPlayer()" type="button">Next Player</button> <button type="submit">Submit Names</button><br><br><h1 style="background-color:black"> Starts a new Game!</h1><button onclick="game301()" type="button" class="button green">301</button> <button class="button green" onclick="gameCricket()" type="button">Cricket</button><button class="button red" onclick="newGame()" type="button">Restart</button>
+				<button onclick="addPlayer()" type="button">Add Player</button>
+				<button onclick="removePlayer()" type="button">Remove Player</button>
+				<br><button onclick="nextPlayer()" type="button">Next Player</button>
+				<button type="submit">Submit Names</button>
+				<br><br><h1 style="background-color:black"> Starts a new Game!</h1>
+				<button onclick="game301()" type="button" class="button green">301</button>
+				<button class="button green" onclick="gameCricket()" type="button">Cricket</button>
+				<button class="button red" onclick="newGame()" type="button">Restart</button>
+				<br><br><br><button onclick="toggleCalibration()" type="button" class="button gray" >Toggle Calibration</button>
 			</div>
+			<div id="playerInputs"></div>
+			
 		</form>
 	</div>
 	<script src="https://cdn.socket.io/4.0.0/socket.io.min.js">
@@ -45,7 +54,7 @@
 		   console.log(gameState);
 	           const playerInputsDiv = document.getElementById('playerInputs');
 	           playerInputsDiv.innerHTML = '';
-	           gameState.players.forEach((player, index) => {
+	           gameState.Players.forEach((player, index) => {
 	               addPlayerInput(player.name, index + 1);
 	               
 	           });
@@ -93,6 +102,10 @@
 	       function newGame() {
 	           socket.emit('newGame');
 	       }
+		   
+		   function toggleCalibration(){
+			socket.emit('calibrate');
+		   }
 	   
 	       function nextPlayer() {
 	           socket.emit('nextPlayer');

@@ -1,168 +1,181 @@
  #scoreboard01 {
-	           display: grid;
-	           grid-template-columns: repeat(2, 1fr);
-	           gap: 10px;
-	           width: 100%;
-	           max-width: 600px;
-	       } 
-
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+	width: 100%;
+	max-width: 600px;
+}
 .scoreboard {
-	           display: grid;
-	           grid-template-columns: repeat(9, 1fr);
-	           gap: 10px;
-	           margin: 20px 0;
-	       }
-		   
-
+	display: grid;
+	grid-template-columns: repeat(10, 1fr);
+	gap: 10px;
+	margin: 20px 0;
+}
 h1 {
-    font-size: 1.8em;
-    margin-bottom: 20px;
-    margin-top: 0px;
+	font-size: 1.8em;
+	margin-bottom: 20px;
+	margin-top: 0px;
 }
 
+.score01{
+	padding-left:90px;
+}
 .player-input {
-    margin: 10px 0;
+	margin: 10px 0;
 }
-
 .player {
-	           display: flex;
-	           height: 2em;
-	           justify-content: space-between;
-	           align-items: center;
-	           padding: 5px;
-	           background-color: rgba(255, 255, 255, 0.2);
-	           border-radius: 5px;
-	       }
-
+	display: flex;
+	height: 2em;
+	/*justify-content: space-between;*/
+	align-items: center;
+	padding: 5px;
+	background-color: rgba(255, 255, 255, 0.2);
+	border-radius: 5px;
+}
 input[type="text"] {
-    width: 70%;
-    padding: 10px;
-    margin: 2px 0;
-    border-radius: 5px;
-    border: none;
+	width: 70%;
+	padding: 10px;
+	margin: 2px 0;
+	border-radius: 5px;
+	border: none;
 }
-
 .controls button, button {
-    background-color: #008CBA;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    border-radius: 5px;
-    cursor: pointer;
+	background-color: #008CBA;
+	border: none;
+	color: white;
+	padding: 10px 20px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 16px;
+	margin: 4px 2px;
+	border-radius: 5px;
+	cursor: pointer;
 }
-
 .controls .green {
-    background-color: #006400;
+	background-color: #006400;
 }
-
 .controls .red {
-    background-color: #8b0000;
+	background-color: #8b0000;
 }
 
+.controls .gray {
+	background-color: #222222;
+}
 .controls button:hover, button:hover {
-    background-color: #005f73;
+	background-color: #005f73;
 }
-
 .controls {
-    margin-top: 20px;
+	margin-top: 20px;
 }
-
 .container01 {
-	           background-color: rgba(0, 0, 0, 0.6);
-	           padding: 20px;
-	           border-radius: 10px;
-	           margin: 0px auto 0px;
-	           width: 90%;
-	           max-width: 600px;
-	       }
-		   
-.cricketContainer {
-	           background-color: rgba(0, 0, 0, 0.6);
-	           padding: 20px;
-	           border-radius: 10px;
-	           margin: 0px auto 0px;
-	           width: 90%;
-	           max-width: 800px;
-	       }		
-
-.scores {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
+	background-color: rgba(0, 0, 0, 0.6);
+	/*padding: 20px;*/
+	border-radius: 10px;
+	margin: 0px auto 0px;
+	width: 90%;
+	max-width: 600px;
 }
-
+.cricketContainer {
+	background-color: rgba(0, 0, 0, 0.6);
+	/*padding: 20px;*/
+	border-radius: 10px;
+	margin: 0px auto 0px;
+	width: 90%;
+	max-width: 800px;
+}
+.scores {
+	display: grid;
+	grid-template-columns: repeat(9, 1fr);
+}
+.score {
+	font-weight: bold;
+	vertical-align: center;
+	font-size:24px;
+	padding-top: 10px;
+}
+.scoreWin {
+	font-weight: bold;
+	vertical-align: center;
+	font-size:40px;
+	padding-top: 5px;
+	border: thick solid red;
+	border-radius: 15px;
+}
 .header, .cell {
-    padding: 5px;
-    border: 1px solid #000;
-    text-align: center;
+	padding: 5px;
+	border: 1px solid #000;
+	text-align: center;
 }
 .cell {
 	height: 30px;
 }
-
-.header {
-    background-color: #660000;
-    font-weight: bold;
+.cellWin {
+	padding-top: 5px;
+	border: thick solid red;
+	border-radius: 15px;
 }
-
+.header {
+	background-color: #660000;
+	font-weight: bold;
+}
+.arrow {
+	padding-top: 10px;
+	width:40px;
+}
 .player-name {
-    display: flex;
+	display: flex;
 	border-radius: 10px;
 	padding: 8px;
-    align-items: center;
-    text-align: center;
-    background-color: #006600;
-    font-weight: bold;
+	align-items: center;
+	text-align: center;
+	background-color: #006600;
+	font-weight: bold;
+	width: 80px;
 }
-
 .turn {
-    font-weight: bold;
-    color: #ff0;
+	font-weight: bold;
+	color: #ff0;
 }
-
 .video-container {
-    position: fixed;
-    top: 470px; /* Adjust this value as needed */
-    left: 50%; /* Centers the div horizontally */
-    margin-left: -130px; /* Half of width to center the div */
-    align-items: center;
-    justify-content: center;
-    z-index: 2;
-    background-size: cover;
-    background-position: center;
+	position: fixed;
+	top: 470px;
+	/* Adjust this value as needed */
+	left: 50%;
+	/* Centers the div horizontally */
+	margin-left: -130px;
+	/* Half of width to center the div */
+	align-items: center;
+	justify-content: center;
+	z-index: 2;
+	background-size: cover;
+	background-position: center;
 }
-
 .alert {
-    background-color: #ff5555;
-    padding: 10px;
-    margin-top: 10px;
-    border-radius: 2px;
+	background-color: #ff5555;
+	padding: 10px;
+	margin-top: 10px;
+	border-radius: 2px;
 }
-
 .bigMsg {
-    margin-top: 5px;
-    color: #66ff00;
-    font-weight: bold;
-    text-align: center;
-    display: inline-block;
-    background-color: rgba(0, 0, 0, 0.8);
-    font-size: 42px;
+	margin-top: 5px;
+	color: yellow;
+	font-weight: bold;
+	text-align: center;
+	display: inline-block;
+	background-color: rgba(0, 0, 0, 0.8);
+	font-size: 42px;
 }
-
 #loadingScreen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2em;
-    z-index: 9999;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.8);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 2em;
+	z-index: 9999;
 }

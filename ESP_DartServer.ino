@@ -53,14 +53,17 @@ String multi = "";
 
 //timer stuff
 unsigned long previousMillis = 0;
-const long interval = 500;
+const long interval = 1000;
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting");
-
+  Serial.begin(9600);
+  //Serial.println("Starting");
+  WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
+  WiFi.setHostname("esp32-dartboard");  //define hostname
   // Connect to Wi-Fi
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
+
   Serial.print("Connecting to Wi-Fi");
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -91,29 +94,28 @@ void setup() {
 void loop() {
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
+    Serial.println('.');
     previousMillis = currentMillis;
-    // Add periodic actions here if needed
   }
+
   throwCheck();
   bigRedCheck();
-
-  //delay(50);
 }
+
 
 //Checks to see if physical button on dartboard has been pressed
 void bigRedCheck() {
   bigRedState = digitalRead(bigRedBtn);
   if (lastButtonState == LOW && bigRedState == LOW) {
-    Serial.println("don't do anything, button is held");
+    //Serial.println("don't do anything, button is held");
   } else if (lastButtonState == HIGH && bigRedState == LOW) {
-    Serial.println("this is where everything is done");
+    //Serial.println("this is where everything is done");
     lastButtonState = LOW;
-    Serial.println("Big Red");
-    sendData(0, "bigRed", 0);
-    delay(50);
+    //Serial.println("Big Red");
+    sendData(0, "bigRed");
   } else {
     if (lastButtonState != HIGH) {
-      Serial.println("set it back to high");
+      //Serial.println("set it back to high");
       lastButtonState = HIGH;
     }
   }
@@ -121,24 +123,21 @@ void bigRedCheck() {
 
 //button cycler
 void throwCheck() {
+
   for (int i = 0; i < masterLines; i++) {
     digitalWrite(matrixMaster[i], LOW);
     for (int j = 0; j < slaveLines; j++) {
       if (digitalRead(matrixSlave[j]) == LOW) {
         multiCheck(matrixMaster[i], matrixSlave[j]);
-
         Serial.print("Score: ");
         Serial.println(values01[i][j]);
-        Serial.println("Master: " + String(matrixMaster[i]) + "   Slave: " + String(matrixSlave[j]));
-        sendData(values01[i][j], multiCheck(matrixMaster[i], matrixSlave[j]), 1);
-        delay(50);
+        sendData(values01[i][j], multiCheck(matrixMaster[i], matrixSlave[j]));
         break;
       }
     }
     digitalWrite(matrixMaster[i], HIGH);
   }
 }
-
 //checks to see if multiiplier or bulls eye have been hit.
 String multiCheck(int M, int S) {
   int count = 0;
@@ -162,11 +161,12 @@ String multiCheck(int M, int S) {
     if (count == 0) multi = "";
   }
   return multi;
-  Serial.println(multi);
+  //Serial.println(multi);
 }
 
 
 void sendData(int point, String msg) {
+
   if (WiFi.status() == WL_CONNECTED) {
     StaticJsonDocument<200> doc;
     doc["point"] = String(point);
@@ -182,5 +182,7 @@ void sendData(int point, String msg) {
     int httpResponseCode = http.responseStatusCode();
     String response = http.responseBody();
     http.endRequest();
+  } else if (WiFi.status() == WL_CONNECT_FAILED || WiFi.status() == WL_CONNECTION_LOST || WiFi.status() == WL_DISCONNECTED) {
+    Serial.println("lost connection");
   }
 }

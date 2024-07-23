@@ -21,10 +21,17 @@ const cricketPoints = [25,20,19,18,17,16,15];
 //Game variables
 let missSound = ['doh','ohNo','triedNotMissing','soClose','AwwTooBad','miss'];
 let turnSound = ['ThrowDarts','fireAway','showMe','yerTurn','yerUp','letErFly'];
+
 let players = [
-    { name: 'Player 1', score: 0, isTurn: false, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 25: 0 },
-    { name: 'Player 2', score: 0, isTurn: false, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 25: 0 }
+    { name: 'Player 1', score: 0, isTurn: false, 15:{hits: 0, status: 0}, 16:{hits: 0, status: 0}, 17:{hits: 0, status: 0}, 18:{hits: 0, status: 0}, 19:{hits: 0, status: 0}, 20:{hits: 0, status: 0}, 25:{hits: 0, status: 0}},
+    { name: 'Player 2', score: 0, isTurn: false, 15:{hits: 0, status: 0}, 16:{hits: 0, status: 0}, 17:{hits: 0, status: 0}, 18:{hits: 0, status: 0}, 19:{hits: 0, status: 0}, 20:{hits: 0, status: 0}, 25:{hits: 0, status: 0}} 
 ];
+
+//temp test array
+/* let players = [
+    { name: 'Player 1', score: 80, isTurn: false, 15:{hits: 3, status: 1}, 16:{hits: 3, status: 1}, 17:{hits: 3, status: 1}, 18:{hits: 3, status: 1}, 19:{hits: 3, status: 1}, 20:{hits: 3, status: 1}, 25:{hits: 3, status: 1}},
+    { name: 'Player 2', score: 90, isTurn: false, 15:{hits: 0, status: 0}, 16:{hits: 0, status: 0}, 17:{hits: 0, status: 0}, 18:{hits: 0, status: 0}, 19:{hits: 0, status: 0}, 20:{hits: 0, status: 0}, 25:{hits: 0, status: 0}}
+]; */
 
 let gameType = '301';
 let currentPlayer = 0;
@@ -34,17 +41,20 @@ let isPaused = 1;
 let numThrows = 0;
 let currThrow = 1;
 let baseScore = 0;
+let isWinner = 0;
 var startScore;
 
 
 function getGameState() {
-    return {
-        players: players.slice(0, players.length),
+	//console.log('game state sending');
+	return {
+		Players: players,
         currState: isStarted,
         ifPaused: isPaused,
 		isStarted: isStarted,
 		gameType: gameType,
-        currPlayer: currentPlayer + 1
+        currPlayer: currentPlayer + 1,
+		isWinner: isWinner
     };
 }
 
@@ -132,21 +142,33 @@ app.post('/data', (req, res) => {
 				//if is cricket zone check if open or closed and add hash or score accordingly
 					var zoneHit = data.point/thisMult;
 					console.log('Zone hit: '+zoneHit);
-					if(cricketPoints.includes(zoneHit)){
-
+					
+					if(cricketPoints.includes(zoneHit) && players[currentPlayer][zoneHit].status!=2){
+						// if the point is in the array and not closed for everyone
 						for(let i=1;i<=thisMult;i++){
-
-							if(players[currentPlayer][zoneHit]<3){
-								players[currentPlayer][zoneHit]++;
-							}else{
-								let numOpen = players.filter(totalOpen=> totalOpen[zoneHit]===3);
-								console.log('Total Open: '+numOpen.length);
-								if(numOpen.length != players.length){
-									players[currentPlayer].score += zoneHit;
+							//if the players point is open, add to their score
+							if(players[currentPlayer][zoneHit].status==1){
+								players[currentPlayer].score += zoneHit;
+							}
+							//cycle through the number of times hit (multiplier)
+							if(players[currentPlayer][zoneHit].hits<3){
+								//if the player has hit the zone less than 3 times, increase their hit count
+								players[currentPlayer][zoneHit].hits++;
+								if(players[currentPlayer][zoneHit].hits==3){
+									//if this is their third hit,open their point, then check to see if all players are open
+									players[currentPlayer][zoneHit].status = 1;
+									closePoint(zoneHit);
+									if(players[currentPlayer][zoneHit].status != 2){
+										//if the point is not closed, but is their third hit, open the point and play a sound
+										setTimeout(function () {
+											io.emit('playSound', 'open');
+										}, 500);
+									}
 								}
 							}
 						}
 					}
+					cricketWinCheck(currentPlayer);
 					break;
 				default:
 					players[currentPlayer].score -= data.point;
@@ -204,8 +226,8 @@ app.get('/scores', (req, res) => {
 });
 
 // Serve the name entry page
-app.get('/players', (req, res) => {
-    res.sendFile(__dirname + '/public/playerNames.html');
+app.get('/control', (req, res) => {
+    res.sendFile(__dirname + '/public/gameControls.html');
 });
 
 io.on('connection', (socket) => {
@@ -227,6 +249,11 @@ io.on('connection', (socket) => {
 	socket.on('gameCricket',() => {
 		gameType = 'cricket';
 		newGame();
+	});
+	
+	socket.on('calibrate', () => {
+		io.emit('calibrate');
+		console.log('calibrate');
 	});
 
     socket.on('addPlayer', () => {
@@ -345,18 +372,19 @@ function newGame() {
 		}
 		player.score = baseScore;
 		
-		player[15]= 0;
-		player[16]= 0;
-		player[17]= 0;
-		player[18]= 0;
-		player[19]= 0;
-		player[20]= 0;
-		player[25]= 0;
+		player[15]= {hits: 0, status: 0};
+		player[16]= {hits: 0, status: 0};
+		player[17]= {hits: 0, status: 0};
+		player[18]= {hits: 0, status: 0};
+		player[19]= {hits: 0, status: 0};
+		player[20]= {hits: 0, status: 0};
+		player[25]= {hits: 0, status: 0};
 	});
     currentPlayer = 0;
     isStarted = 1;
     currThrow = 1;
     isPaused = 0;
+	isWinner=0;
     players.forEach((player, index) => player.isTurn = index === currentPlayer);
     io.emit('alertUpdate', players[currentPlayer].name + ', Throw Darts');
     io.emit('bigMsgUpdate', '');
@@ -408,9 +436,9 @@ function addPlayer() {
 	
     if (players.length < maxPlayers) {
 		io.emit('playSound', 'addPlayer');
-		players.push({ name: 'Player '+(players.length+1), score: baseScore, isTurn: false, 15: 0, 16: 0, 17: 0, 18: 0, 19: 0, 20: 0, 25: 0 });
+		players.push({ name: 'Player '+(players.length+1), score: baseScore, isTurn: false, 15:{hits: 0, status: 0}, 16:{hits: 0, status: 0}, 17:{hits: 0, status: 0}, 18:{hits: 0, status: 0}, 19:{hits: 0, status: 0}, 20:{hits: 0, status: 0}, 25:{hits: 0, status: 0}});
 		io.emit('gameState', getGameState());
-		io.emit('playersData', players);
+		//io.emit('playersData', players);
     }
 }
 
@@ -440,17 +468,54 @@ function playerMiss(){
         }, 1100);
 }
 
-function winner(playerNum) {
+function closePoint(thisPoint){
+	console.log('check close point: ' + thisPoint);
+	console.log(players);
+	let numOpen = players.filter(totalOpen=> totalOpen[thisPoint].status===1);
+	console.log(numOpen);
+	if(numOpen.length == players.length){
+		setTimeout(function () {
+			io.emit('playSound', 'closed');
+		}, 500);
+		console.log('closing point: ' + thisPoint);
+		players.forEach(player => {
+			player[thisPoint].status = 2;
+		});
+	}
+}
 
+function cricketWinCheck(thisPlayer){
+	console.log('Win check');
+	let openTotal=0;
+	//find highest score
+	var highScore = Math.max.apply(Math, players.map(function(o){return o.score;}));
+	var winPlayer = players.findIndex(p => p.score == highScore);
+	//if the current player has the highest score, check to see if they've opened all their points (or they've been closed)
+	if(winPlayer==thisPlayer){
+		for(i=0;i<cricketPoints.length;i++){
+			//if the player has either opened all their points or point is closed, add to total
+			if(players[thisPlayer][cricketPoints[i]].status==1 || players[thisPlayer][cricketPoints[i]].status==2){
+				openTotal++;
+			}
+		}
+		//if the total is 7, all points have been made, announce winner
+		if (openTotal==7){
+			winner(thisPlayer);
+		}
+	}
+}
+
+function winner(playerNum) {
+	isWinner=1;
 	//give a moment for the zone animation and dart hit to finish
 	setTimeout(function () {
 		io.emit('playSound', 'WeHaveAWinner');
         io.emit('playVideo', 'winner.webm', 0);
+		var msg = players[playerNum].name+ ' wins!';
+		console.log(msg);
+		io.emit('bigMsgUpdate', msg);
+		io.emit('alertUpdate', 'Press the button to start a new game');
+		isPaused = 0;
+		isStarted = 0;
     }, 500);
-	
-	var msg = players[playerNum].name+ ' wins!';
-	console.log(msg);
-	io.emit('bigMsgUpdate', msg);
-    isPaused = 0;
-    isStarted = 0;
 }

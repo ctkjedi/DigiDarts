@@ -45,6 +45,7 @@
 	
 	<script>
 	   document.body.style.cursor = 'none';
+	   var calibrate = false;
 	   var bigMsgDiv1 = document.getElementById("bigMsg1");
 	   var alertDiv1 = document.getElementById("alert1");
 	   var bigMsgDiv2 = document.getElementById("bigMsg2");
@@ -72,7 +73,18 @@
 	       newSound.play();
 	   });
 	   
-	    socket.on('hideAttract',()=>{
+	   socket.on('calibrate', ()=> {
+			if(calibrate==false){
+				videoContainer.style = "background: url('_gfx/layout.png') no-repeat center center; background-size: contain;";
+				calibrate=true;
+			}else{
+				videoContainer.style = "background:";
+				calibrate=false;
+			}
+			console.log('calibrate');
+	   });
+	   
+	   socket.on('hideAttract',()=>{
 	       video.pause();
 	       videoContainer.style.display = 'none';
 	   });
@@ -113,15 +125,17 @@
 	   });
 	   
 	   socket.on('gameState', (gameState) => {
-		   //console.log(gameState.players);
+	   calibrate=false;
+		   //console.log('game state: ');
+		   //console.log(gameState.Players);
 		   if(gameState.gameType=='cricket'){
 				cricketContainer.style.display = 'block';
 				container01.style.display = 'none';
-				updateCricket(gameState.players);
+				updateCricket(gameState.Players, gameState.isWinner);
 			}else{
 				container01.style.display = 'grid';
 				cricketContainer.style.display = 'none';
-				updateScores(gameState.players);
+				updateScores(gameState.Players);
 			};
 	       if(gameState.ifPaused==1 && gameState.currState==1){
 	           alertDiv1.textContent = 'Remove Darts, Press Button to Continue';
@@ -150,42 +164,61 @@
 	   
 	   
 	   function updateScores(players) {
+	   //console.log(players);
 	           scoreboard.innerHTML = '';
 	           players.forEach((player, index) => {
+			   //console.log(index);
 	               var barPerc = 100-Math.floor((player.score/301)*100);
 	               const playerDiv = document.createElement('div');
 	               playerDiv.classList.add('player');
+				   playerDiv.innerHTML = ""
 	               playerDiv.style.background = "linear-gradient(90deg, rgba(16,85,0,1) "+String(barPerc)+"%, rgba(2,0,36,1) "+String(barPerc-1)+"%)";
 	               if (player.isTurn) {
 	                   playerDiv.classList.add('turn');
+					   playerDiv.innerHTML += "<img src='_gfx/arrow.png' style= 'width:20px; padding-right:5px;'>";
 	               }
 	               if(player.name == undefined) player.name = "Player "+(index+1);
-	               playerDiv.innerHTML = `<h3>${player.name}<\/h3>                    <h3>Score: ${player.score}<\/h3>`;
-	               scoreboard.appendChild(playerDiv);
+				   
+	               playerDiv.innerHTML += `<h3>${player.name}<\/h3><h3 class="score01">Score: ${player.score}<\/h3>`;
+				   scoreboard.appendChild(playerDiv);
 	           });
 	       }
 		   
-	   function updateCricket(players) {
-	   cricketScoreboard.innerHTML='<div><\/div><div class="header">15<\/div><div class="header">16<\/div><div class="header">17<\/div><div class="header">18<\/div><div class="header">19<\/div><div class="header">20<\/div><div class="header">Bull<\/div><div class="header">Score<\/div>';
+	   function updateCricket(players, winner) {
+	   //console.log('update cricket: ');
+	   //console.log(players);
+	   cricketScoreboard.innerHTML='<div><\/div><div><\/div><div class="header">15<\/div><div class="header">16<\/div><div class="header">17<\/div><div class="header">18<\/div><div class="header">19<\/div><div class="header">20<\/div><div class="header">Bull<\/div><div class="header">Score<\/div>';
 	           players.forEach((player, index) => {
 	               const playerDiv = document.createElement('div');
+				   const arrowDiv = document.createElement('div');
 	               const scoreDiv = document.createElement('div');
-	               scoreDiv.classList.add('cell');
-	               playerDiv.classList.add('player-name');
+	               if(winner == 1 && player.isTurn){
+						scoreDiv.classList.add('scoreWin');
+					}else{
+						scoreDiv.classList.add('score');
+					}
+					arrowDiv.classList.add('arrow');
+					playerDiv.classList.add('player-name');
 	               
 	               if (player.isTurn) {
 	                   playerDiv.classList.add('turn');
+					   arrowDiv.innerHTML = "<img src='_gfx/arrow.png'>";
 	               }
 	               if(player.name == undefined) player.name = "Player "+(index+1);
 	               playerDiv.innerHTML = `${player.name}`;
 	               scoreDiv.innerHTML = `${player.score}`;
+				   cricketScoreboard.appendChild(arrowDiv);
 	               cricketScoreboard.appendChild(playerDiv);
 	               cricketZones.forEach(zone =>{
 	                   var divID = 'p'+(index+1)+'-'+zone;
 	                   let newDiv = document.createElement('div');
-	                   newDiv.classList.add('cell');
+					   if(winner == 1 && player.isTurn){
+							newDiv.classList.add('cellWin');
+					   }else{
+							newDiv.classList.add('cell');
+					   }
 	                   newDiv.id = divID;
-	                   switch (player[zone]) {
+	                   switch (player[zone].hits) {
 	                       case 0:
 	                           newDiv.innerHTML = '-';
 	                           break;

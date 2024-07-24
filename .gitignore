@@ -14,3 +14,7 @@ node_modules/
 /public/_gfx/*.ai
 /public/_gfx/dartboardAnims_AME/
 /_project
+public/scoreHistory.json
+public/scoreHistory.txt
+public/UI.bak
+public/UI.html

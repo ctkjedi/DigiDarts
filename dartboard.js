@@ -19,7 +19,7 @@ const cricketPoints = [25,20,19,18,17,16,15];
 
 
 //Game variables
-let missSound = ['doh','ohNo','triedNotMissing','soClose','AwwTooBad','miss'];
+let missSound = ['doh','ohNo','triedNotMissing','soClose','AwwTooBad','miss', 'ha-ha'];
 let turnSound = ['ThrowDarts','fireAway','showMe','yerTurn','yerUp','letErFly'];
 
 let players = [
@@ -46,7 +46,6 @@ var startScore;
 
 
 function getGameState() {
-	//console.log('game state sending');
 	return {
 		Players: players,
         currState: isStarted,
@@ -268,14 +267,14 @@ io.on('connection', (socket) => {
         nextPlayer();
     });
 
-    socket.on('storeScores', (gameData) => {
-
+    socket.on('storeScores', () => {
+	storeScores(currentPlayer);
         //read existing file
-        const fileData = JSON.parse(fs.readFileSync('public/scoreHistory.json'));
-        fileData.push(gameData);
+        //const fileData = JSON.parse(fs.readFileSync('public/scoreHistory.json'));
+        //fileData.push(gameData);
 
         //write out to file with appended scores
-        fs.writeFileSync('public/scoreHistory.json', JSON.stringify(fileData, null, 2));
+        //fs.writeFileSync('public/scoreHistory.json', JSON.stringify(fileData, null, 2));
     });
 
     socket.on('message', (msg) => {
@@ -412,6 +411,7 @@ function nextPlayer() {
 		io.emit('bigMsgUpdate', '');
         currentPlayer = (currentPlayer + 1) % players.length;
         players.forEach((player, index) => player.isTurn = index === currentPlayer);
+		io.emit('alertUpdate', players[currentPlayer].name + ', Throw Darts');
         io.emit('playSound', 'Player' + String(currentPlayer + 1));
         setTimeout(function () {
             var randSound = Math.floor(Math.random() * turnSound.length);
@@ -469,15 +469,11 @@ function playerMiss(){
 }
 
 function closePoint(thisPoint){
-	console.log('check close point: ' + thisPoint);
-	console.log(players);
 	let numOpen = players.filter(totalOpen=> totalOpen[thisPoint].status===1);
-	console.log(numOpen);
 	if(numOpen.length == players.length){
 		setTimeout(function () {
 			io.emit('playSound', 'closed');
 		}, 500);
-		console.log('closing point: ' + thisPoint);
 		players.forEach(player => {
 			player[thisPoint].status = 2;
 		});
@@ -485,7 +481,6 @@ function closePoint(thisPoint){
 }
 
 function cricketWinCheck(thisPlayer){
-	console.log('Win check');
 	let openTotal=0;
 	//find highest score
 	var highScore = Math.max.apply(Math, players.map(function(o){return o.score;}));
@@ -507,15 +502,35 @@ function cricketWinCheck(thisPlayer){
 
 function winner(playerNum) {
 	isWinner=1;
+	if(players.length>1) storeScores(playerNum);
 	//give a moment for the zone animation and dart hit to finish
 	setTimeout(function () {
 		io.emit('playSound', 'WeHaveAWinner');
         io.emit('playVideo', 'winner.webm', 0);
 		var msg = players[playerNum].name+ ' wins!';
-		console.log(msg);
 		io.emit('bigMsgUpdate', msg);
 		io.emit('alertUpdate', 'Press the button to start a new game');
 		isPaused = 0;
 		isStarted = 0;
     }, 500);
+}
+
+function storeScores(winner) {
+	//once game ends, write the details to the high score file
+	const result = {
+		gameType: gameType,
+        date: Date.now(),
+        players: players.map((player, index) => ({
+            name: player.name,
+            score: player.score,
+            result: index === winner ? 'win' : 'loss'
+        }))
+    };
+	
+	//read existing file
+    const fileData = JSON.parse(fs.readFileSync('public/scoreHistory.json'));
+    fileData.push(result);
+
+    //write out to file with appended scores
+    fs.writeFileSync('public/scoreHistory.json', JSON.stringify(fileData, null, 2));
 }

@@ -1,100 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+
+  <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Scores</title>
+	
+	<link rel="stylesheet" href="styles.css">
     <style>
-        table {
-			background-color: rgba(0, 0, 0, 0.6);
-            width: 75%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-			margin-left: auto;
-			margin-right: auto;
-			margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: rgba(255, 255, 255, 0.6);
-        }
-        .win {
-            background-color: rgba(61, 255, 0, 0.6);
-        }
-        .loss {
-            background-color: rgba(255, 73, 0, 0.6);
-        }
-		
-		body {
-            background: url('_gfx/bg.jpg') no-repeat center center fixed;
-            background-size: cover;
-			color: #fff;
-            font-family: 'Arial', sans-serif;
-            
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
+    body {
+      background: url('_gfx/bg.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Arial', sans-serif;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #button-container {
+      margin-bottom: 20px;
+    }
+
+
+    /*#scores-container {
+      display: flex;
+      flex-direction: column;
+    }*/
+
+    .game {
+      display: none;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+	  grid-template-columns: repeat(3, 1fr);
+    }
+
+    .game .date {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .game .player {
+      margin-bottom: 5px;
+    }
+	
+	.player-name{
+		width: auto;
+	}
     </style>
-</head>
-<body>
 
-<div id="game-container"></div>
+  </head>
 
-<script>
-function formatDate(dateString) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, options);
-}
+  <body>
+    <div id="button-container">
+      <button onclick="showGameType('301')">301</button>
+      <button onclick="showGameType('501')">501</button>
+      <button onclick="showGameType('cricket')">Cricket</button>
+    </div>
+    <div id="scores-container" class="container01"></div>
 
-function createGameTable(game) {
-    let html = `<table>
-                    <thead>
-                        <tr>
-                            <th colspan="3">Game ID: ${game.game}</th>
-                        </tr>
-                        <tr>
-                            <th colspan="3">Date: ${formatDate(game.date)}</th>
-                        </tr>
-                        <tr>
-                            <th>Player</th>
-                            <th>Score</th>
-                            <th>Result</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-    game.players.forEach(player => {
-        html += `<tr class="${player.result}">
-                    <td>${player.player}</td>
-                    <td>${player.score}</td>
-                    <td>${player.result}</td>
-                 </tr>`;
-    });
-    html += `   </tbody>
-                </table>`;
-    return html;
-}
+    <script>
+    function showGameType(gameType) {
+      document.querySelectorAll('.game').forEach(gameDiv => {
+        if (gameDiv.dataset.gameType === gameType) {
+          gameDiv.style.display = 'block';
+        } else {
+          gameDiv.style.display = 'none';
+        }
+      });
+    }
 
-function renderGames(games) {
-    const container = document.getElementById('game-container');
-    games.forEach(gameArray => {
-        gameArray.forEach(game => {
-            container.innerHTML += createGameTable(game);
-        });
-    });
-}
+    function createGameDiv(game) {
+      const gameDiv = document.createElement('div');
+      gameDiv.classList.add('game');
+      gameDiv.dataset.gameType = game.gameType;
 
-fetch('scoreHistory.json')
-    .then(response => response.json())
-    .then(data => {
-        renderGames(data);
+      const dateDiv = document.createElement('div');
+      dateDiv.classList.add('date');
+      dateDiv.textContent = new Date(game.date).toLocaleString();
+      gameDiv.appendChild(dateDiv);
+	  
+	  const scoresDiv = document.createElement('div');
+      scoresDiv.classList.add('oldScores');
+	  gameDiv.appendChild(scoresDiv);
+
+      game.players.forEach(player => {
+        const playerDiv = document.createElement('div');
+		const scoreDiv = document.createElement('div');
+		const resultDiv = document.createElement('div');
+        playerDiv.classList.add('player-name');
+		scoreDiv.classList.add('turn');
+		if(player.result=='win'){
+			resultDiv.classList.add('resultWin');
+		}else{
+			resultDiv.classList.add('resultLoss');
+		}
+        playerDiv.textContent = `${player.name}`;
+		scoreDiv.textContent = `${player.score}`; 
+		resultDiv.textContent = `${player.result}`;
+        scoresDiv.appendChild(playerDiv);
+		scoresDiv.appendChild(scoreDiv);
+		scoresDiv.appendChild(resultDiv);
+      });
+
+      return gameDiv;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+		fetch('scoreHistory.json')
+		.then(response => response.json())
+		.then(scoresData => {
+    // Sort the scoresData array by date in descending order (most recent first)
+			scoresData.sort((a, b) => b.date - a.date);
+			const scoresContainer = document.getElementById('scores-container');
+			scoresData.forEach(game => {
+				scoresContainer.appendChild(createGameDiv(game));
+			});
+		showGameType('301'); // Show the first game type by default
     })
-    .catch(error => console.error('Error fetching the score history:', error));
-</script>
+    .catch(error => console.error('Error loading game data:', error));
+});
+    </script>
 
-</body>
+  </body>
+
 </html>

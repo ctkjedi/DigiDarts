@@ -1,48 +1,82 @@
 [
-  [
-    {
-      "game": 1718751813451,
-      "date": "2024-06-17",
-      "players": [
-        {
-          "player": "John",
-          "score": 1500,
-          "result": "win"
-        },
-        {
-          "player": "Jane",
-          "score": 1200,
-          "result": "loss"
-        },
-        {
-          "player": "Doe",
-          "score": 1200,
-          "result": "loss"
-        }
-      ]
-    }
-  ],
-  [
-    {
-      "game": 1718752019225,
-      "date": "2024-06-17",
-      "players": [
-        {
-          "player": "John",
-          "score": 1500,
-          "result": "win"
-        },
-        {
-          "player": "Jane",
-          "score": 1200,
-          "result": "loss"
-        },
-        {
-          "player": "Doe",
-          "score": 1200,
-          "result": "loss"
-        }
-      ]
-    }
-  ]
+  {
+    "gameType": "301",
+    "date": 1721778553410,
+    "players": [
+      {
+        "name": "Me",
+        "score": 0,
+        "result": "win"
+      },
+      {
+        "name": "Them",
+        "score": 117,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "gameType": "301",
+    "date": 1721778562521,
+    "players": [
+      {
+        "name": "Me",
+        "score": 0,
+        "result": "win"
+      },
+      {
+        "name": "Somebody else",
+        "score": 221,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "gameType": "301",
+    "date": 1721781864763,
+    "players": [
+      {
+        "name": "Player 1",
+        "score": 0,
+        "result": "win"
+      },
+      {
+        "name": "Player 2",
+        "score": 211,
+        "result": "loss"
+      }
+    ]
+  },
+  {
+    "gameType": "301",
+    "date": 1721793981212,
+    "players": [
+      {
+        "name": "Mashelle",
+        "score": 2,
+        "result": "loss"
+      },
+      {
+        "name": "Chris",
+        "score": 0,
+        "result": "win"
+      }
+    ]
+  },
+  {
+    "gameType": "cricket",
+    "date": 1721795443050,
+    "players": [
+      {
+        "name": "Mashelle",
+        "score": 76,
+        "result": "loss"
+      },
+      {
+        "name": "Chris",
+        "score": 110,
+        "result": "win"
+      }
+    ]
+  }
 ]

@@ -84,6 +84,26 @@ input[type="text"] {
 	width: 90%;
 	max-width: 800px;
 }
+
+.oldScores {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+	width: 100%;
+	max-width: 600px;
+}
+
+.resultWin {
+	text-transform: uppercase;
+	font-weight: 900;
+	color: #66ff00;
+}
+
+.resultLoss {
+	text-transform: uppercase;
+	color: red;
+}
+
 .scores {
 	display: grid;
 	grid-template-columns: repeat(9, 1fr);
@@ -131,7 +151,7 @@ input[type="text"] {
 	text-align: center;
 	background-color: #006600;
 	font-weight: bold;
-	width: 80px;
+	width: 120px;
 }
 .turn {
 	font-weight: bold;

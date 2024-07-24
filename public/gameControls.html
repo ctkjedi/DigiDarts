@@ -31,6 +31,7 @@
 				<button class="button green" onclick="gameCricket()" type="button">Cricket</button>
 				<button class="button red" onclick="newGame()" type="button">Restart</button>
 				<br><br><br><button onclick="toggleCalibration()" type="button" class="button gray" >Toggle Calibration</button>
+				<!-- <br><button onclick="storeScores()" type="button" class="button gray" >Save Scores</button> -->
 			</div>
 			<div id="playerInputs"></div>
 			
@@ -51,7 +52,6 @@
 	       });
 	       
 	       socket.on('gameState', (gameState) => {
-		   console.log(gameState);
 	           const playerInputsDiv = document.getElementById('playerInputs');
 	           playerInputsDiv.innerHTML = '';
 	           gameState.Players.forEach((player, index) => {
@@ -98,7 +98,10 @@
 	           socket.emit('skipTo', playerID);
 	       }
 	       
-	       
+	       function storeScores(){
+				socket.emit('storeScores');
+		   }
+		   
 	       function newGame() {
 	           socket.emit('newGame');
 	       }

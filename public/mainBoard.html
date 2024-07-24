@@ -81,7 +81,6 @@
 				videoContainer.style = "background:";
 				calibrate=false;
 			}
-			console.log('calibrate');
 	   });
 	   
 	   socket.on('hideAttract',()=>{
@@ -111,7 +110,6 @@
 	       video.addEventListener('ended', function () {
 	           if(filename=='winner.webm' && vidCount<2){
 	               //if a winner is declared, loop 3 times
-				   console.log('winner sent');
 	               video.src = videoUrl;
 	               videoContainer.style.display = 'flex';
 	               video.play();
@@ -126,8 +124,6 @@
 	   
 	   socket.on('gameState', (gameState) => {
 	   calibrate=false;
-		   //console.log('game state: ');
-		   //console.log(gameState.Players);
 		   if(gameState.gameType=='cricket'){
 				cricketContainer.style.display = 'block';
 				container01.style.display = 'none';
@@ -141,8 +137,8 @@
 	           alertDiv1.textContent = 'Remove Darts, Press Button to Continue';
 			   alertDiv2.textContent = 'Remove Darts, Press Button to Continue';
 	       }else if(gameState.ifPaused==0 && gameState.currState==1){
-	           alertDiv1.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
-			   alertDiv2.textContent = 'Player '+gameState.currPlayer+', Throw Darts';
+	           alertDiv1.textContent = gameState.Players[gameState.currPlayer-1].name+', Throw Darts';
+			   alertDiv2.textContent = gameState.Players[gameState.currPlayer-1].name+', Throw Darts';
 	           attractAudio.loop=false;
 	           attractAudio.pause();
 	       }else if(gameState.ifPaused==1 && gameState.currState==0){
@@ -164,10 +160,8 @@
 	   
 	   
 	   function updateScores(players) {
-	   //console.log(players);
 	           scoreboard.innerHTML = '';
 	           players.forEach((player, index) => {
-			   //console.log(index);
 	               var barPerc = 100-Math.floor((player.score/301)*100);
 	               const playerDiv = document.createElement('div');
 	               playerDiv.classList.add('player');
@@ -185,8 +179,6 @@
 	       }
 		   
 	   function updateCricket(players, winner) {
-	   //console.log('update cricket: ');
-	   //console.log(players);
 	   cricketScoreboard.innerHTML='<div><\/div><div><\/div><div class="header">15<\/div><div class="header">16<\/div><div class="header">17<\/div><div class="header">18<\/div><div class="header">19<\/div><div class="header">20<\/div><div class="header">Bull<\/div><div class="header">Score<\/div>';
 	           players.forEach((player, index) => {
 	               const playerDiv = document.createElement('div');

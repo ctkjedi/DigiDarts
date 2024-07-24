@@ -33,6 +33,7 @@ const mediaFiles = [
 	{ type: 'audio', src: '/audio/triedNotMissing.mp3' },
 	{ type: 'audio', src: '/audio/soClose.mp3' },
 	{ type: 'audio', src: '/audio/AwwTooBad.mp3' },
+	{ type: 'audio', src: '/audio/ha-ha.mp3' },
 	{ type: 'audio', src: '/audio/miss.mp3' },
 	
 	//turn sounds

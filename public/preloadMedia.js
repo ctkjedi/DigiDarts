@@ -47,13 +47,13 @@ const mediaFiles = [
 	{ type: 'audio', src: '/audio/intro.mp3' },
 	
 	//video
-	{ type: 'video', src: '/_gfx/attract.webm' },
-	{ type: 'video', src: '/_gfx/bullseye.webm' },
-	{ type: 'video', src: '/_gfx/double.webm' },
-	{ type: 'video', src: '/_gfx/single.webm' },
-	{ type: 'video', src: '/_gfx/winner.webm' },
-	{ type: 'video', src: '/_gfx/bust.webm' },
-	{ type: 'video', src: '/_gfx/triple.webm' }
+	{ type: 'video', src: '/_gfx/attract.mp4' },
+	{ type: 'video', src: '/_gfx/bullseye.mp4' },
+	{ type: 'video', src: '/_gfx/double.mp4' },
+	{ type: 'video', src: '/_gfx/single.mp4' },
+	{ type: 'video', src: '/_gfx/winner.mp4' },
+	{ type: 'video', src: '/_gfx/bust.mp4' },
+	{ type: 'video', src: '/_gfx/triple.mp4' }
 ];
 
 // Function to preload a media file and return a promise

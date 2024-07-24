@@ -108,7 +108,7 @@
 	       video.play();
 	       var vidCount=0;
 	       video.addEventListener('ended', function () {
-	           if(filename=='winner.webm' && vidCount<2){
+	           if(filename=='winner.mp4' && vidCount<2){
 	               //if a winner is declared, loop 3 times
 	               video.src = videoUrl;
 	               videoContainer.style.display = 'flex';
@@ -144,7 +144,7 @@
 	       }else if(gameState.ifPaused==1 && gameState.currState==0){
 	           alertDiv1.textContent = 'Press the button to start a new game.';
 			   alertDiv2.textContent = 'Press the button to start a new game.';
-	           video.src = '_gfx/attract.webm';
+	           video.src = '_gfx/attract.mp4';
 	           video.loop = true;
 	           videoContainer.style.display = 'flex';
 	           video.play();

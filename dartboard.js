@@ -107,31 +107,31 @@ app.post('/data', (req, res) => {
 				thisMult=3;
                 thisScore = 'TRIPLE! 3 x ' + (data.point / 3) + ' = ' + data.point;
                 thisAngle = zones.indexOf(data.point / 3) * 18;
-                io.emit('playVideo', 'triple.webm', thisAngle);
+                io.emit('playVideo', 'triple.mp4', thisAngle);
                 break;
             case 'DOUBLE':
                 io.emit('playSound', 'Dbl');
 				thisMult=2;
                 thisScore = 'DOUBLE! 2 x ' + (data.point / 2) + ' = ' + data.point;
                 thisAngle = zones.indexOf(data.point / 2) * 18;
-                io.emit('playVideo', 'double.webm', thisAngle);
+                io.emit('playVideo', 'double.mp4', thisAngle);
                 break;
             case 'BULL':
                 io.emit('playSound', 'Bullseye');
                 thisScore = 'BULLSEYE! ' + data.point;
 				thisMult=1;
                 thisAngle = zones.indexOf(data.point) * 18;
-				io.emit('playVideo', 'bullseye.webm', 0);
+				io.emit('playVideo', 'bullseye.mp4', 0);
                 break;
             case 'DBLBULL':
                 io.emit('playSound', 'DblBullseye');
 				thisMult=2;
                 thisScore = 'DOUBLE BULL! 2 x ' + (data.point / 2) + ' = ' + data.point;
-               io.emit('playVideo', 'bullseye.webm', 0);
+               io.emit('playVideo', 'bullseye.mp4', 0);
                 break;
             default:
                 thisAngle = zones.indexOf(data.point) * 18;
-				io.emit('playVideo', 'single.webm', thisAngle);
+				io.emit('playVideo', 'single.mp4', thisAngle);
 				thisMult=1;
                 thisScore = data.point;
             }
@@ -180,7 +180,7 @@ app.post('/data', (req, res) => {
             if (players[currentPlayer].score < 0) {
                 players[currentPlayer].score = startScore;
 				setTimeout(function () {
-                   io.emit('playVideo', 'bust.webm', 0);
+                   io.emit('playVideo', 'bust.mp4', 0);
                 }, 50);
                 isPaused = 1;
 				currThrow=4;
@@ -506,7 +506,7 @@ function winner(playerNum) {
 	//give a moment for the zone animation and dart hit to finish
 	setTimeout(function () {
 		io.emit('playSound', 'WeHaveAWinner');
-        io.emit('playVideo', 'winner.webm', 0);
+        io.emit('playVideo', 'winner.mp4', 0);
 		var msg = players[playerNum].name+ ' wins!';
 		io.emit('bigMsgUpdate', msg);
 		io.emit('alertUpdate', 'Press the button to start a new game');

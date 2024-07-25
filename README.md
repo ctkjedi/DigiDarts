@@ -24,6 +24,7 @@ This doesn't get into the disassembly, contact tracing, wiring or soldering part
 * Music
 
 ## Acknowledgments
+Music by [Chris Lee](https://github.com/cleeverz)
 
 Inspiration, code snippets, etc.
 * [ChatGPT](https://chatgpt.com) for code help and formatting

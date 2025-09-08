@@ -75,6 +75,8 @@ input[type="text"] {
 	margin: 0px auto 0px;
 	width: 90%;
 	max-width: 600px;
+	position:relative;
+	top:50px;
 }
 .cricketContainer {
 	background-color: rgba(0, 0, 0, 0.6);
@@ -168,7 +170,7 @@ input[type="text"] {
 	align-items: center;
 	justify-content: center;
 	z-index: 2;
-	background-size: cover;
+	background-size: 230px 230px;
 	background-position: center;
 }
 .alert {

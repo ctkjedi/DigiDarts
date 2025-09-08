@@ -22,10 +22,10 @@
 		<h1>Enter Player Names</h1>
 		<form id="playerForm" name="playerForm">
 			<div class="controls">
-				<button onclick="addPlayer()" type="button">Add Player</button>
-				<button onclick="removePlayer()" type="button">Remove Player</button>
-				<br><button onclick="nextPlayer()" type="button">Next Player</button>
-				<button type="submit">Submit Names</button>
+				<button onclick="addPlayer()" type="button">Add Player</button><button onclick="nextPlayer()" type="button">Next Player</button><br>
+				<button class="button red" onclick="removePlayer()" type="button">Remove Last Player</button>
+				
+				
 				<br><br><h1 style="background-color:black"> Starts a new Game!</h1>
 				<button onclick="game301()" type="button" class="button green">301</button>
 				<button class="button green" onclick="gameCricket()" type="button">Cricket</button>
@@ -34,6 +34,7 @@
 				<!-- <br><button onclick="storeScores()" type="button" class="button gray" >Save Scores</button> -->
 			</div>
 			<div id="playerInputs"></div>
+			<button type="submit">Submit Names</button>
 			
 		</form>
 	</div>
@@ -87,7 +88,7 @@
 	               const playerInputsDiv = document.getElementById('playerInputs');
 	               const newPlayerDiv = document.createElement('div');
 	               newPlayerDiv.classList.add('player-input');
-	               newPlayerDiv.innerHTML = `<input type="text" id="player${playerIndex}" placeholder="Player ${playerIndex}" value="${playerName}" required>  <button onclick="skipTo(${playerIndex-1})" type="button">=><\/button>`;
+	               newPlayerDiv.innerHTML = `<input type="text" id="player${playerIndex}" value="${playerName}" required>  <button onclick="skipTo(${playerIndex-1})" type="button">=><\/button>`;
 	               playerInputsDiv.appendChild(newPlayerDiv);
 	           } else {
 	               //alert('Maximum 6 players allowed.');
@@ -116,6 +117,7 @@
 	       
 	       function addPlayer() {
 	           socket.emit('addPlayer');
+			   playerCount++;
 	       }
 		   
 		   function game301() {
@@ -127,8 +129,11 @@
 	       }
 
 	       function removePlayer() {
-	           socket.emit('removePlayer');
-	       }
+               if (confirm("Are you sure you want to remove the last player?")) {
+                   socket.emit('removePlayer');
+                   playerCount--;
+               }
+           }
 	</script>
 </body>
 </html>

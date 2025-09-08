@@ -25,7 +25,7 @@ const mediaFiles = [
 	{ type: 'audio', src: '/audio/DblBullseye.mp3' },
 	{ type: 'audio', src: '/audio/Dbl.mp3' },
 	{ type: 'audio', src: '/audio/Bust.mp3' },
-	{ type: 'audio', src: '/audio/WeHaveAWinner.mp3' },
+	{ type: 'audio', src: '/audio/winner.mp3' },
 	
 	//miss sounds
 	{ type: 'audio', src: '/audio/doh.mp3' },

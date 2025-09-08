@@ -35,7 +35,7 @@
 	</div>
 	
 	<div class="video-container" id="video-container">
-		<video height="260" id="video" width="260"></video>
+		<video height="240" id="video" width="240"></video>
 	</div>
 	<div id="loadingScreen">
 		Loading...
@@ -75,7 +75,7 @@
 	   
 	   socket.on('calibrate', ()=> {
 			if(calibrate==false){
-				videoContainer.style = "background: url('_gfx/layout.png') no-repeat center center; background-size: contain;";
+				videoContainer.style = "background: url('_gfx/layout.png') no-repeat center center; background-size: 230px 230px;";
 				calibrate=true;
 			}else{
 				videoContainer.style = "background:";

@@ -62,9 +62,10 @@ app.post('/data', (req, res) => {
     const data = req.body;
 	console.log(req.body);
     //sends arduino confirmation
-    res.json({
+    /* res.json({
         message: 'Point received'
-    });
+    }); */
+	res.send('hit received');
 	
     if (typeof data.point=='string') data.point = Number(data.point);
 	
@@ -313,7 +314,7 @@ io.on('connection', (socket) => {
 	
 	socket.on('setPlayers', (playerNames) => {
 		players = players.map((player, index) => {
-	    if (index < playerNames.length) {
+	    if (index <= playerNames.length) {
 	        player.name = playerNames[index];
 	    }
 	    return player;
@@ -505,7 +506,7 @@ function winner(playerNum) {
 	if(players.length>1) storeScores(playerNum);
 	//give a moment for the zone animation and dart hit to finish
 	setTimeout(function () {
-		io.emit('playSound', 'WeHaveAWinner');
+		io.emit('playSound', 'winner');
         io.emit('playVideo', 'winner.mp4', 0);
 		var msg = players[playerNum].name+ ' wins!';
 		io.emit('bigMsgUpdate', msg);
